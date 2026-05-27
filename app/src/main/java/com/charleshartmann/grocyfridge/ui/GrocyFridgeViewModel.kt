@@ -10,9 +10,13 @@ import com.charleshartmann.grocyfridge.ai.ModelManager
 import com.charleshartmann.grocyfridge.ai.ModelState
 import com.charleshartmann.grocyfridge.data.GrocyClientFactory
 import com.charleshartmann.grocyfridge.data.GrocyRepository
+import com.charleshartmann.grocyfridge.data.SyncResult
 import com.charleshartmann.grocyfridge.data.ScanHistoryStore
 import com.charleshartmann.grocyfridge.data.SettingsStore
 import com.charleshartmann.grocyfridge.model.AppSettings
+import com.charleshartmann.grocyfridge.model.GrocyLocation
+import com.charleshartmann.grocyfridge.model.GrocyQuantityUnit
+import com.charleshartmann.grocyfridge.model.GrocyStockItem
 import com.charleshartmann.grocyfridge.model.ProposedChange
 import com.charleshartmann.grocyfridge.model.ScanHistoryChange
 import com.charleshartmann.grocyfridge.model.ScanHistoryRecord
@@ -26,6 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 data class ConnectionTestResult(
     val isSuccess: Boolean,
@@ -63,6 +68,21 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
     )
 
     val modelState: StateFlow<ModelState> = modelManager.modelState
+
+    private val _inventoryStock = MutableStateFlow<List<GrocyStockItem>>(emptyList())
+    val inventoryStock: StateFlow<List<GrocyStockItem>> = _inventoryStock.asStateFlow()
+
+    private val _inventoryLocations = MutableStateFlow<Map<Long, String>>(emptyMap())
+    val inventoryLocations: StateFlow<Map<Long, String>> = _inventoryLocations.asStateFlow()
+
+    private val _inventoryUnits = MutableStateFlow<Map<Long, String>>(emptyMap())
+    val inventoryUnits: StateFlow<Map<Long, String>> = _inventoryUnits.asStateFlow()
+
+    private val _inventoryLoading = MutableStateFlow(false)
+    val inventoryLoading: StateFlow<Boolean> = _inventoryLoading.asStateFlow()
+
+    private val _inventoryError = MutableStateFlow<String?>(null)
+    val inventoryError: StateFlow<String?> = _inventoryError.asStateFlow()
 
     val onboardingComplete: StateFlow<Boolean> = settingsStore.onboardingComplete.stateIn(
         scope = viewModelScope,
@@ -154,39 +174,62 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
     fun applyReview() {
         val currentSettings = settings.value
         val review = uiState.value.scanState as? ScanState.Review ?: return
+        val recordTimestamp = System.currentTimeMillis()
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
-            try {
-                repository(currentSettings).applyChanges(review.changes)
-                historyStore.add(
-                    ScanHistoryRecord(
-                        timestampMillis = System.currentTimeMillis(),
-                        location = uiState.value.selectedLocation.displayName,
-                        imagePath = review.imagePath,
-                        changes = review.changes.map {
-                            ScanHistoryChange(
-                                name = it.displayName,
-                                previousAmount = it.currentAmount,
-                                newAmount = it.count,
-                                included = it.included
-                            )
-                        },
-                        status = ScanStatus.SUCCESS
-                    )
+
+            val historyChanges = review.changes.map {
+                ScanHistoryChange(
+                    name = it.displayName,
+                    previousAmount = it.currentAmount,
+                    newAmount = it.count,
+                    included = it.included,
+                    productId = it.productId,
+                    locationId = it.locationId,
+                    unitId = it.unitId,
+                    isNewProduct = it.isNewProduct
                 )
-                val appliedCount = review.changes.count { it.included }
+            }
+            historyStore.add(
+                ScanHistoryRecord(
+                    timestampMillis = recordTimestamp,
+                    location = uiState.value.selectedLocation.displayName,
+                    imagePath = review.imagePath,
+                    changes = historyChanges,
+                    status = ScanStatus.PENDING
+                )
+            )
+            Log.i(TAG, "Saved PENDING history record at $recordTimestamp")
+
+            try {
+                val result = repository(currentSettings).applyChanges(review.changes)
+                historyStore.update(recordTimestamp) { it.copy(status = ScanStatus.SUCCESS) }
+                Log.i(TAG, "Sync succeeded, updated record to SUCCESS")
+                val message = when {
+                    result.synced == 0 && result.skipped > 0 ->
+                        "Inventory already up to date — ${result.skipped} item${if (result.skipped != 1) "s" else ""} unchanged."
+                    result.skipped > 0 ->
+                        "Synced ${result.synced} change${if (result.synced != 1) "s" else ""}, ${result.skipped} already up to date."
+                    else ->
+                        "Synced ${result.synced} inventory change${if (result.synced != 1) "s" else ""} to Grocy."
+                }
                 _uiState.update {
                     it.copy(
                         scanState = ScanState.Idle,
                         isSaving = false,
-                        lastSyncMessage = "Synced $appliedCount inventory changes to Grocy."
+                        lastSyncMessage = message
                     )
                 }
             } catch (throwable: Throwable) {
+                val errorMsg = extractErrorMessage(throwable)
+                historyStore.update(recordTimestamp) {
+                    it.copy(status = ScanStatus.FAILED, errorMessage = errorMsg.take(500))
+                }
+                Log.e(TAG, "Sync failed, updated record to FAILED: $errorMsg", throwable)
                 _uiState.update {
                     it.copy(
                         isSaving = false,
-                        scanState = ScanState.Error(throwable.message ?: "Grocy sync failed.")
+                        scanState = ScanState.Error(errorMsg)
                     )
                 }
             }
@@ -208,10 +251,130 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     fun retryScan(record: ScanHistoryRecord) {
-        viewModelScope.launch {
-            historyStore.delete(record)
+        val hasSyncData = record.changes.isNotEmpty() &&
+            record.changes.any { it.included && it.locationId != 0L }
+
+        if (hasSyncData) {
+            retrySyncOnly(record)
+        } else {
+            viewModelScope.launch { historyStore.delete(record) }
+            analyzePhoto(record.imagePath)
         }
-        analyzePhoto(record.imagePath)
+    }
+
+    private fun retrySyncOnly(record: ScanHistoryRecord) {
+        val currentSettings = settings.value
+        if (!currentSettings.isComplete) {
+            _uiState.update { it.copy(scanState = ScanState.Error("Grocy URL and API key are required.")) }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+            historyStore.update(record.timestampMillis) {
+                it.copy(status = ScanStatus.PENDING, errorMessage = null)
+            }
+            Log.i(TAG, "Retrying sync for record at ${record.timestampMillis}")
+
+            try {
+                val result = repository(currentSettings).retrySyncChanges(record.changes)
+                historyStore.update(record.timestampMillis) { it.copy(status = ScanStatus.SUCCESS) }
+                Log.i(TAG, "Sync retry succeeded for record at ${record.timestampMillis}")
+                val message = when {
+                    result.synced == 0 && result.skipped > 0 ->
+                        "Inventory already up to date — ${result.skipped} item${if (result.skipped != 1) "s" else ""} unchanged."
+                    result.skipped > 0 ->
+                        "Synced ${result.synced} change${if (result.synced != 1) "s" else ""}, ${result.skipped} already up to date."
+                    else ->
+                        "Synced ${result.synced} inventory change${if (result.synced != 1) "s" else ""} to Grocy."
+                }
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        lastSyncMessage = message
+                    )
+                }
+            } catch (throwable: Throwable) {
+                val errorMsg = extractErrorMessage(throwable)
+                historyStore.update(record.timestampMillis) {
+                    it.copy(status = ScanStatus.FAILED, errorMessage = errorMsg.take(500))
+                }
+                Log.e(TAG, "Sync retry failed: $errorMsg", throwable)
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        scanState = ScanState.Error(errorMsg)
+                    )
+                }
+            }
+        }
+    }
+
+    fun loadInventory() {
+        val currentSettings = settings.value
+        if (!currentSettings.isComplete) return
+        viewModelScope.launch {
+            _inventoryLoading.value = true
+            _inventoryError.value = null
+            try {
+                val repo = repository(currentSettings)
+                val stock = repo.fetchStock()
+                val locations = repo.fetchLocations()
+                val units = repo.fetchQuantityUnits()
+                _inventoryStock.value = stock.sortedBy { it.product?.name?.lowercase() }
+                _inventoryLocations.value = locations.associate { (it.id ?: 0L) to it.name }
+                _inventoryUnits.value = units.associate { it.id to it.name }
+                Log.i(TAG, "Loaded inventory: ${stock.size} items")
+            } catch (throwable: Throwable) {
+                val msg = extractErrorMessage(throwable)
+                _inventoryError.value = msg
+                Log.e(TAG, "Failed to load inventory: $msg", throwable)
+            } finally {
+                _inventoryLoading.value = false
+            }
+        }
+    }
+
+    fun updateProductAmount(productId: Long, newAmount: Double, locationId: Long) {
+        val currentSettings = settings.value
+        viewModelScope.launch {
+            try {
+                repository(currentSettings).setProductAmount(productId, newAmount, locationId)
+                Log.i(TAG, "Updated product $productId amount to $newAmount")
+                loadInventory()
+            } catch (throwable: Throwable) {
+                _inventoryError.value = extractErrorMessage(throwable)
+            }
+        }
+    }
+
+    fun consumeProduct(productId: Long, amount: Double) {
+        val currentSettings = settings.value
+        viewModelScope.launch {
+            try {
+                repository(currentSettings).consumeProduct(productId, amount)
+                Log.i(TAG, "Consumed $amount of product $productId")
+                loadInventory()
+            } catch (throwable: Throwable) {
+                _inventoryError.value = extractErrorMessage(throwable)
+            }
+        }
+    }
+
+    fun deleteProduct(productId: Long) {
+        val currentSettings = settings.value
+        viewModelScope.launch {
+            try {
+                repository(currentSettings).deleteProduct(productId)
+                Log.i(TAG, "Deleted product $productId")
+                loadInventory()
+            } catch (throwable: Throwable) {
+                _inventoryError.value = extractErrorMessage(throwable)
+            }
+        }
+    }
+
+    fun clearInventoryError() {
+        _inventoryError.value = null
     }
 
     fun downloadModel() {
@@ -247,6 +410,20 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
             )
             Log.i(TAG, "Saved failed scan to history: $imagePath")
         }
+    }
+
+    private fun extractErrorMessage(throwable: Throwable): String {
+        if (throwable is HttpException) {
+            val code = throwable.code()
+            val body = try {
+                throwable.response()?.errorBody()?.string()
+            } catch (_: Exception) {
+                null
+            }
+            Log.w(TAG, "HTTP $code error body: $body")
+            return if (!body.isNullOrBlank()) "HTTP $code: $body" else "HTTP $code: ${throwable.message()}"
+        }
+        return throwable.message ?: "Grocy sync failed."
     }
 
     companion object {

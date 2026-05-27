@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -201,6 +202,7 @@ private fun HistoryCard(
 ) {
     val hasImage = record.imagePath.isNotBlank() && File(record.imagePath).exists()
     val isFailed = record.status == ScanStatus.FAILED
+    val isPending = record.status == ScanStatus.PENDING
     val appliedCount = record.changes.count { it.included }
     val locationIcon = when {
         record.location.equals("Fridge", ignoreCase = true) -> Icons.Filled.Kitchen
@@ -210,10 +212,11 @@ private fun HistoryCard(
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isFailed)
-                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-            else
-                MaterialTheme.colorScheme.surfaceContainerLow
+            containerColor = when {
+                isFailed -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                isPending -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
+                else -> MaterialTheme.colorScheme.surfaceContainerLow
+            }
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -251,15 +254,18 @@ private fun HistoryCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (isFailed) {
-                            Icon(
+                        when {
+                            isPending -> CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp
+                            )
+                            isFailed -> Icon(
                                 Icons.Filled.Error,
                                 contentDescription = "Failed",
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.error
                             )
-                        } else {
-                            Icon(
+                            else -> Icon(
                                 locationIcon,
                                 contentDescription = null,
                                 modifier = Modifier.size(16.dp),
@@ -270,8 +276,11 @@ private fun HistoryCard(
                         Text(
                             record.location,
                             style = MaterialTheme.typography.labelLarge,
-                            color = if (isFailed) MaterialTheme.colorScheme.error
-                            else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = when {
+                                isFailed -> MaterialTheme.colorScheme.error
+                                isPending -> MaterialTheme.colorScheme.tertiary
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant
+                            }
                         )
                         if (isFailed) {
                             Spacer(Modifier.width(6.dp))
@@ -279,6 +288,15 @@ private fun HistoryCard(
                                 "Failed",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        if (isPending) {
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                "Syncing",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.tertiary,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -292,6 +310,7 @@ private fun HistoryCard(
                     Spacer(Modifier.height(2.dp))
                     Text(
                         when {
+                            isPending -> "Syncing to Grocy..."
                             isFailed -> "Tap to view details or retry"
                             else -> "$appliedCount item${if (appliedCount != 1) "s" else ""} synced"
                         },

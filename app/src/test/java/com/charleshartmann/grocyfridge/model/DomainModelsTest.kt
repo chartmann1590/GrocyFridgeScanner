@@ -1,7 +1,9 @@
 package com.charleshartmann.grocyfridge.model
 
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -201,5 +203,44 @@ class ScanHistoryRecordTest {
 
         assertEquals(2, decoded.size)
         assertEquals("Cupboards", decoded[1].location)
+    }
+
+    @Test
+    fun scanHistoryChangeDeserializesWithoutNewFields() {
+        val json = Json { ignoreUnknownKeys = true }
+        val old = """{"name":"Milk","previousAmount":1.0,"newAmount":3.0,"included":true}"""
+        val change = json.decodeFromString(ScanHistoryChange.serializer(), old)
+        assertEquals("Milk", change.name)
+        assertNull(change.productId)
+        assertEquals(0L, change.locationId)
+        assertEquals(0L, change.unitId)
+        assertFalse(change.isNewProduct)
+    }
+
+    @Test
+    fun scanHistoryChangeSerializesNewFields() {
+        val json = Json { ignoreUnknownKeys = true }
+        val change = ScanHistoryChange("Milk", 1.0, 3.0, true, productId = 10L, locationId = 2L, unitId = 3L, isNewProduct = false)
+        val encoded = json.encodeToString(ScanHistoryChange.serializer(), change)
+        val decoded = json.decodeFromString(ScanHistoryChange.serializer(), encoded)
+        assertEquals(10L, decoded.productId)
+        assertEquals(2L, decoded.locationId)
+        assertEquals(3L, decoded.unitId)
+        assertFalse(decoded.isNewProduct)
+    }
+
+    @Test
+    fun pendingStatusSerializesCorrectly() {
+        val json = Json { ignoreUnknownKeys = true }
+        val record = ScanHistoryRecord(
+            timestampMillis = 1700000000000L,
+            location = "Fridge",
+            imagePath = "/photo.jpg",
+            changes = emptyList(),
+            status = ScanStatus.PENDING
+        )
+        val encoded = json.encodeToString(ScanHistoryRecord.serializer(), record)
+        val decoded = json.decodeFromString(ScanHistoryRecord.serializer(), encoded)
+        assertEquals(ScanStatus.PENDING, decoded.status)
     }
 }

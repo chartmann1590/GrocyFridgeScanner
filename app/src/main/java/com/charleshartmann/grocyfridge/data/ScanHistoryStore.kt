@@ -40,4 +40,16 @@ class ScanHistoryStore(private val context: Context) {
             prefs[historyKey] = json.encodeToString(serializer, current.filter { it.timestampMillis != record.timestampMillis })
         }
     }
+
+    suspend fun update(timestampMillis: Long, transform: (ScanHistoryRecord) -> ScanHistoryRecord) {
+        context.historyDataStore.edit { prefs ->
+            val current = prefs[historyKey]?.let { encoded ->
+                runCatching { json.decodeFromString(serializer, encoded) }.getOrDefault(emptyList())
+            } ?: emptyList()
+            prefs[historyKey] = json.encodeToString(
+                serializer,
+                current.map { if (it.timestampMillis == timestampMillis) transform(it) else it }
+            )
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.charleshartmann.grocyfridge.data
 
+import com.charleshartmann.grocyfridge.model.ConsumeRequest
 import com.charleshartmann.grocyfridge.model.CreatedObjectResponse
 import com.charleshartmann.grocyfridge.model.GrocyLocation
 import com.charleshartmann.grocyfridge.model.GrocyProduct
@@ -8,8 +9,10 @@ import com.charleshartmann.grocyfridge.model.GrocyStockItem
 import com.charleshartmann.grocyfridge.model.InventoryRequest
 import com.charleshartmann.grocyfridge.model.SystemInfoResponse
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface GrocyApi {
@@ -39,4 +42,19 @@ interface GrocyApi {
         @Path("productId") productId: Long,
         @Body request: InventoryRequest
     )
+
+    @POST("api/stock/products/{productId}/consume")
+    suspend fun consumeProduct(
+        @Path("productId") productId: Long,
+        @Body request: ConsumeRequest
+    )
+
+    @PUT("api/objects/products/{productId}")
+    suspend fun updateProduct(
+        @Path("productId") productId: Long,
+        @Body product: GrocyProduct
+    )
+
+    @DELETE("api/objects/products/{productId}")
+    suspend fun deleteProduct(@Path("productId") productId: Long)
 }

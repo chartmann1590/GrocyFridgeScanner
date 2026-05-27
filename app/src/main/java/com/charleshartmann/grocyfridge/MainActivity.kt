@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import com.charleshartmann.grocyfridge.ui.GrocyFridgeViewModel
 import com.charleshartmann.grocyfridge.ui.screens.HistoryScreen
 import com.charleshartmann.grocyfridge.ui.screens.HomeScreen
+import com.charleshartmann.grocyfridge.ui.screens.InventoryScreen
 import com.charleshartmann.grocyfridge.ui.screens.OnboardingScreen
 import com.charleshartmann.grocyfridge.ui.screens.SettingsScreen
 import com.charleshartmann.grocyfridge.ui.theme.GrocyFridgeTheme
@@ -101,6 +104,7 @@ private fun MainNavigation(viewModel: GrocyFridgeViewModel) {
     val navController = rememberNavController()
     val navItems = listOf(
         NavItem("home", "Scanner", Icons.Filled.Home, Icons.Outlined.Home),
+        NavItem("inventory", "Inventory", Icons.Filled.Inventory2, Icons.Outlined.Inventory2),
         NavItem("history", "History", Icons.Filled.History, Icons.Outlined.History),
         NavItem("settings", "Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
     )
@@ -159,6 +163,9 @@ private fun MainNavigation(viewModel: GrocyFridgeViewModel) {
         ) {
             composable("home") {
                 HomeScreen(viewModel = viewModel)
+            }
+            composable("inventory") {
+                InventoryScreen(viewModel = viewModel)
             }
             composable("history") {
                 HistoryScreen(viewModel = viewModel)

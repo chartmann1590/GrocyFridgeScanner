@@ -87,8 +87,13 @@ data class InventoryRequest(
     @SerialName("new_amount") val newAmount: Double,
     @SerialName("best_before_date") val bestBeforeDate: String = "2999-12-31",
     @SerialName("location_id") val locationId: Long,
-    @SerialName("stock_label_type") val stockLabelType: Int = 1,
     val note: String = "Updated by fridge scanner photo"
+)
+
+@Serializable
+data class ConsumeRequest(
+    val amount: Double,
+    @SerialName("spoiled") val spoiled: Boolean = false
 )
 
 @Serializable
@@ -112,7 +117,7 @@ data class AppSettings(
 
 @Serializable
 enum class ScanStatus {
-    SUCCESS, FAILED
+    PENDING, SUCCESS, FAILED
 }
 
 @Serializable
@@ -131,7 +136,11 @@ data class ScanHistoryChange(
     val name: String,
     val previousAmount: Double,
     val newAmount: Double,
-    val included: Boolean
+    val included: Boolean,
+    val productId: Long? = null,
+    val locationId: Long = 0L,
+    val unitId: Long = 0L,
+    val isNewProduct: Boolean = false
 )
 
 sealed interface ScanState {

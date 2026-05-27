@@ -6,8 +6,10 @@ import com.charleshartmann.grocyfridge.model.GrocyLocation
 import com.charleshartmann.grocyfridge.model.GrocyProduct
 import com.charleshartmann.grocyfridge.model.GrocyQuantityUnit
 import com.charleshartmann.grocyfridge.model.GrocyStockItem
+import com.charleshartmann.grocyfridge.model.ConsumeRequest
 import com.charleshartmann.grocyfridge.model.InventoryRequest
 import com.charleshartmann.grocyfridge.model.ProposedChange
+import com.charleshartmann.grocyfridge.model.ScanHistoryChange
 import com.charleshartmann.grocyfridge.model.StorageLocation
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -278,6 +280,38 @@ class GrocyRepositoryTest {
 
         assertTrue(proposals.isEmpty())
     }
+
+    @Test
+    fun retrySyncChangesAppliesHistoryChanges() = runTest {
+        val api = FakeGrocyApi(
+            products = mutableListOf(GrocyProduct(id = 10, name = "Milk")),
+            locations = mutableListOf(GrocyLocation(id = 2, name = "Fridge"))
+        )
+        val repository = GrocyRepository(api)
+        val changes = listOf(
+            ScanHistoryChange("Milk", 1.0, 3.0, true, productId = 10L, locationId = 2L, unitId = 2L),
+            ScanHistoryChange("Chips", 0.0, 2.0, true, productId = null, locationId = 2L, unitId = 3L, isNewProduct = true)
+        )
+        repository.retrySyncChanges(changes)
+
+        assertEquals(2, api.inventoryRequests.size)
+        assertEquals(10L, api.inventoryRequests[0].first)
+        assertEquals(3.0, api.inventoryRequests[0].second.newAmount, 0.0)
+        assertEquals("Chips", api.products.last().name)
+    }
+
+    @Test
+    fun retrySyncChangesSkipsExcludedAndLegacyChanges() = runTest {
+        val api = FakeGrocyApi()
+        val repository = GrocyRepository(api)
+        val changes = listOf(
+            ScanHistoryChange("Milk", 1.0, 3.0, false, productId = 10L, locationId = 2L, unitId = 2L),
+            ScanHistoryChange("OldRecord", 0.0, 1.0, true, productId = 5L, locationId = 0L, unitId = 0L)
+        )
+        repository.retrySyncChanges(changes)
+
+        assertEquals(0, api.inventoryRequests.size)
+    }
 }
 
 private class FakeGrocyApi(
@@ -315,5 +349,13 @@ private class FakeGrocyApi(
 
     override suspend fun inventoryProduct(productId: Long, request: InventoryRequest) {
         inventoryRequests += productId to request
+    }
+
+    override suspend fun consumeProduct(productId: Long, request: ConsumeRequest) {}
+
+    override suspend fun updateProduct(productId: Long, product: GrocyProduct) {}
+
+    override suspend fun deleteProduct(productId: Long) {
+        products.removeAll { it.id == productId }
     }
 }

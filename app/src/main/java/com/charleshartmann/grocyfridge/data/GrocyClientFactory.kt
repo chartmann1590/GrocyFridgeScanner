@@ -21,7 +21,7 @@ object GrocyClientFactory {
         val normalizedUrl = baseUrl.trim().trimEnd('/') + "/"
         val logger = HttpLoggingInterceptor { message ->
             Log.d("GrocyHttp", message)
-        }.apply { level = HttpLoggingInterceptor.Level.HEADERS }
+        }.apply { level = HttpLoggingInterceptor.Level.BODY }
 
         val client = OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
@@ -30,9 +30,20 @@ object GrocyClientFactory {
                 chain.proceed(
                     chain.request().newBuilder()
                         .header("GROCY-API-KEY", apiKey)
-                        .header("Content-Type", "application/json")
                         .build()
                 )
+            }
+            .addNetworkInterceptor { chain ->
+                val request = chain.request()
+                if (request.body != null) {
+                    chain.proceed(
+                        request.newBuilder()
+                            .header("Content-Type", "application/json")
+                            .build()
+                    )
+                } else {
+                    chain.proceed(request)
+                }
             }
             .addInterceptor(logger)
             .build()
