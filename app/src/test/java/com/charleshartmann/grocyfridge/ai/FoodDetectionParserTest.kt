@@ -212,4 +212,47 @@ class FoodDetectionParserTest {
         assertEquals(1, result.items.size)
         assertEquals("bread", result.items.first().name)
     }
+
+    @Test
+    fun handlesBareArrayInMarkdownFence() {
+        val input = """
+            ```json
+            [
+              {"name": "Chicken Corn Chowder Soup", "count": 1, "container": "can", "confidence": 0.95}
+            ]
+            ```
+            """.trimIndent()
+        val result = parser.parse(input)
+
+        assertEquals(1, result.items.size)
+        assertEquals("Chicken Corn Chowder Soup", result.items.first().name)
+        assertEquals(1.0, result.items.first().count, 0.0)
+    }
+
+    @Test
+    fun handlesBareArrayWithoutFence() {
+        val result = parser.parse(
+            """[{"name":"milk","count":2,"container":"bottle","confidence":0.9},{"name":"eggs","count":6,"container":"box","confidence":0.8}]"""
+        )
+
+        assertEquals(2, result.items.size)
+        assertEquals("milk", result.items[0].name)
+        assertEquals("eggs", result.items[1].name)
+    }
+
+    @Test
+    fun handlesBareArrayWithTrailingComma() {
+        val result = parser.parse(
+            """
+            ```json
+            [
+              {"name": "yogurt", "count": 3, "container": "cup", "confidence": 0.75},
+            ]
+            ```
+            """.trimIndent()
+        )
+
+        assertEquals(1, result.items.size)
+        assertEquals("yogurt", result.items.first().name)
+    }
 }
