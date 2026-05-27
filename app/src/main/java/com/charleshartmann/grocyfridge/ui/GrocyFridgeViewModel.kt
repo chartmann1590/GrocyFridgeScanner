@@ -82,7 +82,7 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
             try {
                 val api = GrocyClientFactory.create(url.trim().trimEnd('/'), apiKey.trim())
                 val info = api.systemInfo()
-                val version = info["grocy_version"]?.toString() ?: info["version"]?.toString()
+                val version = info.grocyVersion ?: info.version
                 _connectionTest.value = ConnectionTestResult(
                     isSuccess = true,
                     message = if (version != null) "Connected! Grocy version: $version" else "Connected successfully!"

@@ -6,6 +6,7 @@ import com.charleshartmann.grocyfridge.model.GrocyProduct
 import com.charleshartmann.grocyfridge.model.GrocyQuantityUnit
 import com.charleshartmann.grocyfridge.model.GrocyStockItem
 import com.charleshartmann.grocyfridge.model.InventoryRequest
+import com.charleshartmann.grocyfridge.model.SystemInfoResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -13,7 +14,7 @@ import retrofit2.http.Path
 
 interface GrocyApi {
     @GET("api/system/info")
-    suspend fun systemInfo(): Map<String, @JvmSuppressWildcards Any?>
+    suspend fun systemInfo(): SystemInfoResponse
 
     @GET("api/objects/products")
     suspend fun products(): List<GrocyProduct>

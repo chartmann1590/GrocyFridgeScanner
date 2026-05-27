@@ -288,7 +288,8 @@ private class FakeGrocyApi(
     val inventoryRequests = mutableListOf<Pair<Long, InventoryRequest>>()
     private var nextId = 100L
 
-    override suspend fun systemInfo(): Map<String, Any?> = mapOf("grocy_version" to "test")
+    override suspend fun systemInfo(): com.charleshartmann.grocyfridge.model.SystemInfoResponse =
+        com.charleshartmann.grocyfridge.model.SystemInfoResponse(grocyVersion = "test")
     override suspend fun products(): List<GrocyProduct> = products
     override suspend fun quantityUnits(): List<GrocyQuantityUnit> = listOf(
         GrocyQuantityUnit(id = 2, name = "Piece"),

@@ -91,6 +91,12 @@ data class InventoryRequest(
     val note: String = "Updated by fridge scanner photo"
 )
 
+@Serializable
+data class SystemInfoResponse(
+    @SerialName("grocy_version") val grocyVersion: String? = null,
+    val version: String? = null
+)
+
 data class AppSettings(
     val grocyUrl: String = "",
     val grocyApiKey: String = ""
