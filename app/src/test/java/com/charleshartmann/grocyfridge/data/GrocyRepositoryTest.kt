@@ -289,7 +289,9 @@ private class FakeGrocyApi(
     private var nextId = 100L
 
     override suspend fun systemInfo(): com.charleshartmann.grocyfridge.model.SystemInfoResponse =
-        com.charleshartmann.grocyfridge.model.SystemInfoResponse(grocyVersion = "test")
+        com.charleshartmann.grocyfridge.model.SystemInfoResponse(
+            grocyVersion = com.charleshartmann.grocyfridge.model.GrocyVersion(Version = "test")
+        )
     override suspend fun products(): List<GrocyProduct> = products
     override suspend fun quantityUnits(): List<GrocyQuantityUnit> = listOf(
         GrocyQuantityUnit(id = 2, name = "Piece"),

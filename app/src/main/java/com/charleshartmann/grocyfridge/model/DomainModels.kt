@@ -92,8 +92,14 @@ data class InventoryRequest(
 )
 
 @Serializable
+data class GrocyVersion(
+    val Version: String? = null,
+    val ReleaseDate: String? = null
+)
+
+@Serializable
 data class SystemInfoResponse(
-    @SerialName("grocy_version") val grocyVersion: String? = null,
+    @SerialName("grocy_version") val grocyVersion: GrocyVersion? = null,
     val version: String? = null
 )
 
