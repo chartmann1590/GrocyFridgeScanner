@@ -10,6 +10,9 @@ Scan your fridge or cupboard with your phone camera. On-device AI detects food i
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-blue?logo=kotlin)](https://kotlinlang.org)
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-ff6f00?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 [![Gemma 4 E2B](https://img.shields.io/badge/AI-Gemma%204%20E2B-4285f4?logo=google)](https://ai.google.dev/gemma)
+[![Latest Release](https://img.shields.io/github/v/release/chartmann1590/GrocyFridgeScanner?label=Latest%20Release&color=brightgreen)](https://github.com/chartmann1590/GrocyFridgeScanner/releases/latest)
+
+**[Download the latest APK](https://github.com/chartmann1590/GrocyFridgeScanner/releases/latest)** &middot; [View all releases](https://github.com/chartmann1590/GrocyFridgeScanner/releases)
 
 </div>
 
