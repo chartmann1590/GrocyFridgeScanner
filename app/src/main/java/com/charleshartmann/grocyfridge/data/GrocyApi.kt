@@ -12,6 +12,9 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface GrocyApi {
+    @GET("api/system/info")
+    suspend fun systemInfo(): Map<String, @JvmSuppressWildcards Any?>
+
     @GET("api/objects/products")
     suspend fun products(): List<GrocyProduct>
 

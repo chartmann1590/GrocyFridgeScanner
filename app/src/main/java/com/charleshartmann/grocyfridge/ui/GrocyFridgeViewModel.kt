@@ -22,9 +22,15 @@ import com.charleshartmann.grocyfridge.model.StorageLocation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class ConnectionTestResult(
+    val isSuccess: Boolean,
+    val message: String
+)
 
 data class AppUiState(
     val selectedLocation: StorageLocation = StorageLocation.Fridge,
@@ -47,6 +53,9 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState
 
+    private val _connectionTest = MutableStateFlow<ConnectionTestResult?>(null)
+    val connectionTest: StateFlow<ConnectionTestResult?> = _connectionTest.asStateFlow()
+
     val history: StateFlow<List<ScanHistoryRecord>> = historyStore.records.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -65,6 +74,36 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             settingsStore.save(settings)
         }
+    }
+
+    fun testConnection(url: String, apiKey: String) {
+        viewModelScope.launch {
+            _connectionTest.value = ConnectionTestResult(true, "Testing...")
+            try {
+                val api = GrocyClientFactory.create(url.trim().trimEnd('/'), apiKey.trim())
+                val info = api.systemInfo()
+                val version = info["grocy_version"]?.toString() ?: info["version"]?.toString()
+                _connectionTest.value = ConnectionTestResult(
+                    isSuccess = true,
+                    message = if (version != null) "Connected! Grocy version: $version" else "Connected successfully!"
+                )
+                Log.i(TAG, "Connection test passed: $info")
+            } catch (e: Exception) {
+                val msg = when {
+                    e.message?.contains("401") == true -> "Authentication failed — check your API key"
+                    e.message?.contains("404") == true -> "Server found but Grocy API not detected — check URL"
+                    e.message?.contains("Unable to resolve") == true -> "Cannot reach server — check URL and network"
+                    e.message?.contains("Connection refused") == true -> "Connection refused — server may be down"
+                    else -> "Connection failed: ${e.message}"
+                }
+                _connectionTest.value = ConnectionTestResult(isSuccess = false, message = msg)
+                Log.w(TAG, "Connection test failed: $msg", e)
+            }
+        }
+    }
+
+    fun clearConnectionTest() {
+        _connectionTest.value = null
     }
 
     fun selectLocation(location: StorageLocation) {

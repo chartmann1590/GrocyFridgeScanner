@@ -24,12 +24,15 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -47,9 +50,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.charleshartmann.grocyfridge.ai.ModelState
 import com.charleshartmann.grocyfridge.model.AppSettings
+import com.charleshartmann.grocyfridge.ui.ConnectionTestResult
 import com.charleshartmann.grocyfridge.ui.GrocyFridgeViewModel
 
 @Composable
@@ -58,6 +63,7 @@ fun SettingsScreen(
 ) {
     val settings by viewModel.settings.collectAsState()
     val modelState by viewModel.modelState.collectAsState()
+    val connectionTest by viewModel.connectionTest.collectAsState()
 
     Column(
         modifier = Modifier
@@ -83,7 +89,7 @@ fun SettingsScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        ConnectionStatusCard(isConnected = settings.isComplete)
+        ConnectionStatusCard(connectionTest = connectionTest)
 
         Spacer(Modifier.height(16.dp))
 
@@ -96,7 +102,9 @@ fun SettingsScreen(
         ) {
             SetupForm(
                 settings = settings,
-                onSave = { viewModel.saveSettings(it) }
+                connectionTest = connectionTest,
+                onSave = { viewModel.saveSettings(it) },
+                onTest = { url, key -> viewModel.testConnection(url, key) }
             )
         }
 
@@ -152,14 +160,16 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun ConnectionStatusCard(isConnected: Boolean) {
+private fun ConnectionStatusCard(connectionTest: ConnectionTestResult?) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isConnected)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                MaterialTheme.colorScheme.errorContainer
+            containerColor = when {
+                connectionTest == null -> MaterialTheme.colorScheme.surfaceContainerLow
+                connectionTest.isSuccess && connectionTest.message != "Testing..." -> MaterialTheme.colorScheme.primaryContainer
+                connectionTest.message == "Testing..." -> MaterialTheme.colorScheme.surfaceContainerLow
+                else -> MaterialTheme.colorScheme.errorContainer
+            }
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -168,33 +178,65 @@ private fun ConnectionStatusCard(isConnected: Boolean) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(
-                if (isConnected) Icons.Filled.CheckCircle else Icons.Filled.Close,
-                contentDescription = null,
-                tint = if (isConnected)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(24.dp)
-            )
+            when {
+                connectionTest == null -> {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                connectionTest.message == "Testing..." -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                connectionTest.isSuccess -> {
+                    Icon(
+                        Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                else -> {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
             Column {
                 Text(
-                    if (isConnected) "Connected" else "Not Connected",
+                    when {
+                        connectionTest == null -> "Not Tested"
+                        connectionTest.message == "Testing..." -> "Testing connection..."
+                        connectionTest.isSuccess -> "Connected"
+                        else -> "Connection Failed"
+                    },
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (isConnected)
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    else
-                        MaterialTheme.colorScheme.onErrorContainer
+                    color = when {
+                        connectionTest == null -> MaterialTheme.colorScheme.onSurfaceVariant
+                        connectionTest.isSuccess && connectionTest.message != "Testing..." -> MaterialTheme.colorScheme.onPrimaryContainer
+                        connectionTest.message == "Testing..." -> MaterialTheme.colorScheme.onSurface
+                        else -> MaterialTheme.colorScheme.onErrorContainer
+                    }
                 )
                 Text(
-                    if (isConnected) "Your Grocy server is configured and ready."
-                    else "Enter your Grocy URL and API key below.",
+                    connectionTest?.message ?: "Tap Test Connection after saving your credentials.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (isConnected)
-                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                    else
-                        MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                    color = when {
+                        connectionTest == null -> MaterialTheme.colorScheme.onSurfaceVariant
+                        connectionTest.isSuccess && connectionTest.message != "Testing..." -> MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        connectionTest.message == "Testing..." -> MaterialTheme.colorScheme.onSurfaceVariant
+                        else -> MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                    }
                 )
             }
         }
@@ -375,11 +417,15 @@ private fun ModelStatusCard(
 @Composable
 private fun SetupForm(
     settings: AppSettings,
-    onSave: (AppSettings) -> Unit
+    connectionTest: ConnectionTestResult?,
+    onSave: (AppSettings) -> Unit,
+    onTest: (String, String) -> Unit
 ) {
     var url by remember(settings.grocyUrl) { mutableStateOf(settings.grocyUrl) }
     var apiKey by remember(settings.grocyApiKey) { mutableStateOf(settings.grocyApiKey) }
     var saved by remember(settings) { mutableStateOf(false) }
+    var showApiKey by remember { mutableStateOf(false) }
+    val isTesting = connectionTest?.message == "Testing..."
 
     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -417,31 +463,62 @@ private fun SetupForm(
             leadingIcon = {
                 Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(20.dp))
             },
+            trailingIcon = {
+                IconButton(onClick = { showApiKey = !showApiKey }) {
+                    Icon(
+                        if (showApiKey) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = if (showApiKey) "Hide API key" else "Show API key",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            },
             singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (showApiKey) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp)
         )
 
-        Button(
-            onClick = {
-                onSave(AppSettings(url.trim().trimEnd('/'), apiKey.trim()))
-                saved = true
-            },
-            enabled = url.isNotBlank() && apiKey.isNotBlank(),
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                Icons.Filled.CheckCircle,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(if (saved) "Saved" else "Save Connection")
+            Button(
+                onClick = {
+                    onSave(AppSettings(url.trim().trimEnd('/'), apiKey.trim()))
+                    saved = true
+                },
+                enabled = url.isNotBlank() && apiKey.isNotBlank(),
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    Icons.Filled.CheckCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(if (saved) "Saved" else "Save")
+            }
+
+            OutlinedButton(
+                onClick = { onTest(url, apiKey) },
+                enabled = url.isNotBlank() && apiKey.isNotBlank() && !isTesting,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                if (isTesting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text("Test")
+            }
         }
     }
 }

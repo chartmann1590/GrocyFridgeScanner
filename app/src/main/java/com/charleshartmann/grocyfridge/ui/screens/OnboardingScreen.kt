@@ -21,15 +21,19 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -47,16 +51,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.charleshartmann.grocyfridge.ai.ModelState
 import com.charleshartmann.grocyfridge.model.AppSettings
+import com.charleshartmann.grocyfridge.ui.ConnectionTestResult
 
 @Composable
 fun OnboardingScreen(
     isGrocyConfigured: Boolean,
     modelState: ModelState,
     modelSizeBytes: Long,
+    connectionTest: ConnectionTestResult?,
     onSaveGrocy: (AppSettings) -> Unit,
+    onTestConnection: (String, String) -> Unit,
     onDownloadModel: () -> Unit,
     onFinish: () -> Unit,
     onSkip: () -> Unit
@@ -121,10 +129,12 @@ fun OnboardingScreen(
         ) { currentStep ->
             when (currentStep) {
                 0 -> GrocySetupStep(
+                    connectionTest = connectionTest,
                     onSave = { settings ->
                         onSaveGrocy(settings)
                         step = 1
-                    }
+                    },
+                    onTest = { url, key -> onTestConnection(url, key) }
                 )
                 1 -> ModelDownloadStep(
                     modelState = modelState,
@@ -188,9 +198,15 @@ private fun StepIndicator(currentStep: Int, totalSteps: Int, labels: List<String
 }
 
 @Composable
-private fun GrocySetupStep(onSave: (AppSettings) -> Unit) {
+private fun GrocySetupStep(
+    connectionTest: ConnectionTestResult?,
+    onSave: (AppSettings) -> Unit,
+    onTest: (String, String) -> Unit
+) {
     var url by remember { mutableStateOf("") }
     var apiKey by remember { mutableStateOf("") }
+    var showApiKey by remember { mutableStateOf(false) }
+    val isTesting = connectionTest?.message == "Testing..."
 
     Card(
         shape = RoundedCornerShape(20.dp),
@@ -241,22 +257,109 @@ private fun GrocySetupStep(onSave: (AppSettings) -> Unit) {
                 leadingIcon = {
                     Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(20.dp))
                 },
+                trailingIcon = {
+                    IconButton(onClick = { showApiKey = !showApiKey }) {
+                        Icon(
+                            if (showApiKey) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            contentDescription = if (showApiKey) "Hide API key" else "Show API key",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                },
                 singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (showApiKey) VisualTransformation.None else PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )
 
-            Button(
-                onClick = { onSave(AppSettings(url.trim().trimEnd('/'), apiKey.trim())) },
-                enabled = url.isNotBlank() && apiKey.isNotBlank(),
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+            if (connectionTest != null) {
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (connectionTest.isSuccess && !isTesting)
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                        else if (isTesting)
+                            MaterialTheme.colorScheme.surfaceContainerHigh
+                        else
+                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (isTesting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else if (connectionTest.isSuccess) {
+                            Icon(
+                                Icons.Filled.CheckCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Icon(
+                                Icons.Filled.Close,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        Text(
+                            connectionTest.message,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (connectionTest.isSuccess && !isTesting)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else if (isTesting)
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            else
+                                MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Continue")
+                Button(
+                    onClick = { onTest(url, apiKey) },
+                    enabled = url.isNotBlank() && apiKey.isNotBlank() && !isTesting,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    if (isTesting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onSecondary
+                        )
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    Text("Test Connection")
+                }
+
+                Button(
+                    onClick = { onSave(AppSettings(url.trim().trimEnd('/'), apiKey.trim())) },
+                    enabled = url.isNotBlank() && apiKey.isNotBlank(),
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("Continue")
+                }
             }
         }
     }
