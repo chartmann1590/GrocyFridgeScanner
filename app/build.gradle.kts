@@ -38,6 +38,28 @@ android {
         buildConfig = true
     }
 
+    signingConfigs {
+        create("release") {
+            val ksFile = System.getenv("KEYSTORE_FILE")
+            val ksPwd = System.getenv("KEYSTORE_PASSWORD")
+            val ksAlias = System.getenv("KEY_ALIAS")
+            val ksAliasPwd = System.getenv("KEY_ALIAS_PASSWORD")
+            if (ksFile != null && File(ksFile).exists()) {
+                storeFile = File(ksFile)
+                storePassword = ksPwd
+                keyAlias = ksAlias
+                keyPassword = ksAliasPwd
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
