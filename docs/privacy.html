@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy — Grocy Fridge Scanner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --teal-40: #006B63;
+            --teal-50: #00877D;
+            --surface: #F8FAF6;
+            --surface-card: #FFFFFF;
+            --on-surface: #1A1C1A;
+            --on-surface-variant: #4A514A;
+            --outline: #C4C8C2;
+            --radius: 16px;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--surface);
+            color: var(--on-surface);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+
+        nav {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(248,250,246,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--outline);
+            padding: 16px 0;
+        }
+        nav .container { display: flex; align-items: center; justify-content: space-between; }
+        .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; text-decoration: none; color: var(--on-surface); }
+        .nav-brand svg { width: 28px; height: 28px; }
+        .nav-links a { color: var(--on-surface-variant); text-decoration: none; font-size: 14px; font-weight: 500; }
+        .nav-links a:hover { color: var(--teal-40); }
+
+        .page-header { padding: 60px 0 40px; border-bottom: 1px solid var(--outline); margin-bottom: 48px; }
+        .page-header h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+        .page-header p { color: var(--on-surface-variant); font-size: 15px; }
+
+        .policy { padding-bottom: 80px; }
+        .policy h2 {
+            font-size: 22px; font-weight: 700; margin-top: 48px; margin-bottom: 12px;
+            padding-bottom: 8px; border-bottom: 1px solid var(--outline);
+        }
+        .policy h2:first-of-type { margin-top: 0; }
+        .policy p { font-size: 15px; color: var(--on-surface-variant); margin-bottom: 16px; }
+        .policy ul { margin: 0 0 16px 24px; color: var(--on-surface-variant); font-size: 15px; }
+        .policy li { margin-bottom: 8px; }
+        .policy strong { color: var(--on-surface); }
+
+        .highlight-box {
+            background: rgba(0,107,99,0.06);
+            border-left: 4px solid var(--teal-40);
+            border-radius: 0 12px 12px 0;
+            padding: 20px 24px;
+            margin: 24px 0;
+        }
+        .highlight-box p { color: var(--on-surface); margin-bottom: 0; font-weight: 500; }
+
+        .data-table {
+            width: 100%; border-collapse: collapse; margin: 16px 0 24px;
+            font-size: 14px;
+        }
+        .data-table th {
+            text-align: left; padding: 10px 14px;
+            background: var(--surface); border-bottom: 2px solid var(--outline);
+            font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em;
+            color: var(--on-surface-variant);
+        }
+        .data-table td {
+            padding: 10px 14px; border-bottom: 1px solid var(--outline);
+            color: var(--on-surface-variant);
+        }
+
+        footer { padding: 32px 0; border-top: 1px solid var(--outline); text-align: center; }
+        footer p { font-size: 13px; color: var(--on-surface-variant); }
+        footer a { color: var(--teal-40); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 28px; }
+            .data-table { font-size: 13px; }
+            .data-table th, .data-table td { padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="container">
+        <a class="nav-brand" href="index.html">
+            <svg viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#006B63"/><path d="M8 14l3-3 3 3 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="10" r="2" fill="#82DA8C"/></svg>
+            Grocy Fridge Scanner
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div class="container">
+        <h1>Privacy Policy</h1>
+        <p>Last updated: May 27, 2026</p>
+    </div>
+</div>
+
+<div class="container">
+<div class="policy">
+
+<div class="highlight-box">
+    <p>Grocy Fridge Scanner does not collect, transmit, or share any personal data. All processing happens on your device. The only data sent externally goes to the Grocy server you configure yourself.</p>
+</div>
+
+<h2>1. Overview</h2>
+<p>Grocy Fridge Scanner is an open-source Android application that uses on-device artificial intelligence to detect food items in photos you take of your fridge or cupboard, then syncs those changes to a self-hosted Grocy inventory server that you control.</p>
+<p>This privacy policy explains what data the app accesses, where it is stored, and how it is used.</p>
+
+<h2>2. Data We Collect</h2>
+<p><strong>We do not collect any data.</strong> The developers of Grocy Fridge Scanner have no access to your photos, your inventory data, your Grocy server credentials, or any other information processed by this app.</p>
+<p>There are no analytics, no crash reporting, no advertising SDKs, and no third-party tracking of any kind built into this application.</p>
+
+<h2>3. Data Stored on Your Device</h2>
+<p>The following data is stored locally on your Android device and never leaves it unless you explicitly configure a Grocy server:</p>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Where Stored</th>
+            <th>Purpose</th>
+            <th>Encrypted</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Grocy Server URL</strong></td>
+            <td>Android DataStore (preferences)</td>
+            <td>Connect to your Grocy instance</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td><strong>Grocy API Key</strong></td>
+            <td>Android Encrypted SharedPreferences</td>
+            <td>Authenticate with your Grocy instance</td>
+            <td>Yes (AES-256)</td>
+        </tr>
+        <tr>
+            <td><strong>AI Model (Gemma 4 E2B)</strong></td>
+            <td>App internal storage (~1.5 GB)</td>
+            <td>On-device food detection</td>
+            <td>N/A</td>
+        </tr>
+        <tr>
+            <td><strong>Scan Photos</strong></td>
+            <td>App cache directory</td>
+            <td>Temporary use for AI analysis and review</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td><strong>Scan History</strong></td>
+            <td>Android DataStore (preferences)</td>
+            <td>Display past scans in the History screen</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td><strong>Onboarding Completion</strong></td>
+            <td>Android DataStore (preferences)</td>
+            <td>Track whether initial setup is done</td>
+            <td>No</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>4. Data Sent to Your Grocy Server</h2>
+<p>When you configure a Grocy server and tap "Sync to Grocy," the following data is sent to <strong>your</strong> self-hosted Grocy instance over HTTPS:</p>
+<ul>
+    <li><strong>Inventory changes</strong> — product names, quantities, and location assignments</li>
+    <li><strong>New product creations</strong> — if a detected food item doesn't exist in your Grocy database, the app creates it</li>
+</ul>
+<p>This data is sent directly from your phone to your Grocy server. It does not pass through any intermediary servers controlled by the app developers.</p>
+
+<h2>5. Camera Access</h2>
+<p>The app requests access to your device's rear camera for the sole purpose of taking photos of food storage areas (fridge shelves, cupboards, pantry). Photos are used only for:</p>
+<ul>
+    <li>On-device AI analysis to detect and count food items</li>
+    <li>Display in the review screen so you can verify what was detected</li>
+    <li>Storage in scan history for your reference</li>
+</ul>
+<p>Photos are never uploaded to any cloud service. They remain in the app's cache directory on your device and can be cleared by clearing the app's cache or uninstalling the app.</p>
+
+<h2>6. AI Processing</h2>
+<p>Grocy Fridge Scanner uses <strong>Gemma 4 E2B</strong>, an AI model that runs entirely on your device using the LiteRT framework.</p>
+<ul>
+    <li><strong>No images are sent to any server</strong> for AI processing. All inference happens locally on your phone's processor.</li>
+    <li>The AI model file (~1.5 GB) is downloaded from HuggingFace during initial setup and stored locally. This is a one-time download.</li>
+    <li>The model processes your photo, identifies food items, and returns results — all without network access.</li>
+</ul>
+
+<h2>7. Network Access</h2>
+<p>The app uses network access for exactly two purposes:</p>
+<ul>
+    <li><strong>Downloading the AI model</strong> — A single connection to HuggingFace (huggingface.co) to download the Gemma 4 E2B model file during onboarding.</li>
+    <li><strong>Communicating with your Grocy server</strong> — When you sync inventory changes, the app connects to the Grocy server URL you provided.</li>
+</ul>
+<p>No other network connections are made by the app.</p>
+
+<h2>8. Third-Party Services</h2>
+<p>This application does not integrate with any third-party analytics, advertising, or data collection services. Specifically, the app does <strong>not</strong> use:</p>
+<ul>
+    <li>Google Analytics, Firebase, or any usage tracking</li>
+    <li>Facebook SDK, AdMob, or any advertising frameworks</li>
+    <li>Any crash reporting services (e.g., Crashlytics, Sentry)</li>
+    <li>Any social media SDKs</li>
+</ul>
+
+<h2>9. Data Retention and Deletion</h2>
+<ul>
+    <li><strong>Scan photos</strong> are stored in the app's cache directory. They are deleted when you clear the app's cache or uninstall the app.</li>
+    <li><strong>Scan history</strong> is stored locally. The last 25 scans are retained. Individual scans can be deleted from the History screen in the app.</li>
+    <li><strong>Grocy credentials</strong> can be removed by clearing the app's data in Android Settings, or by uninstalling the app.</li>
+    <li><strong>AI model file</strong> can be deleted by clearing app data or uninstalling. It can be re-downloaded from the Settings screen.</li>
+</ul>
+<p>Uninstalling the app removes all locally stored data.</p>
+
+<h2>10. Children's Privacy</h2>
+<p>This app does not knowingly collect information from children. The app does not collect information from anyone — it simply does not have any data collection mechanism.</p>
+
+<h2>11. Open Source</h2>
+<p>Grocy Fridge Scanner is open source. You can inspect every line of code to verify the claims made in this privacy policy. The source code is available at:</p>
+<p><a href="https://github.com/chartmann1590/GrocyFridgeScanner" style="color: var(--teal-40); font-weight: 600;">github.com/chartmann1590/GrocyFridgeScanner</a></p>
+
+<h2>12. Changes to This Policy</h2>
+<p>If this privacy policy is updated in the future, changes will be reflected on this page with an updated "Last updated" date. Since the app is open source, any changes to data handling would also be visible in the source code.</p>
+
+<h2>13. Contact</h2>
+<p>If you have questions about this privacy policy or the app's data practices, you can open an issue on the GitHub repository:</p>
+<p><a href="https://github.com/chartmann1590/GrocyFridgeScanner/issues" style="color: var(--teal-40); font-weight: 600;">github.com/chartmann1590/GrocyFridgeScanner/issues</a></p>
+
+</div>
+</div>
+
+<footer>
+    <div class="container">
+        <p><a href="index.html">Home</a> &middot; <a href="https://github.com/chartmann1590/GrocyFridgeScanner">GitHub</a> &middot; Privacy Policy</p>
+    </div>
+</footer>
+
+</body>
+</html>
