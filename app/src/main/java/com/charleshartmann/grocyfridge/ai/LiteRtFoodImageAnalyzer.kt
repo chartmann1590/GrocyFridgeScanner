@@ -12,7 +12,7 @@ import java.io.File
 
 class LiteRtFoodImageAnalyzer(
     private val modelFile: File,
-    private val parser: FoodDetectionParser = FoodDetectionParser()
+    private val parser: FoodDetectionParser = FoodDetectionParser(ParserLogger.ANDROID)
 ) : FoodImageAnalyzer {
     override suspend fun analyze(imagePath: String): FoodDetectionResult = withContext(Dispatchers.Default) {
         val config = EngineConfig(

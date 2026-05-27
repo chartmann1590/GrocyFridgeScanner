@@ -27,8 +27,10 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
@@ -40,6 +42,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -56,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.charleshartmann.grocyfridge.model.ScanHistoryChange
 import com.charleshartmann.grocyfridge.model.ScanHistoryRecord
+import com.charleshartmann.grocyfridge.model.ScanStatus
 import com.charleshartmann.grocyfridge.ui.GrocyFridgeViewModel
 import com.charleshartmann.grocyfridge.ui.theme.NegativeDelta
 import com.charleshartmann.grocyfridge.ui.theme.NeutralDelta
@@ -176,7 +180,8 @@ fun HistoryScreen(
                         record = record,
                         isExpanded = expandedIndex == index,
                         onToggle = { expandedIndex = if (expandedIndex == index) -1 else index },
-                        onDelete = { viewModel.deleteHistoryRecord(it) }
+                        onDelete = { viewModel.deleteHistoryRecord(it) },
+                        onRetry = { viewModel.retryScan(it) }
                     )
                 }
 
@@ -191,10 +196,12 @@ private fun HistoryCard(
     record: ScanHistoryRecord,
     isExpanded: Boolean,
     onToggle: () -> Unit,
-    onDelete: (ScanHistoryRecord) -> Unit
+    onDelete: (ScanHistoryRecord) -> Unit,
+    onRetry: (ScanHistoryRecord) -> Unit
 ) {
-    val appliedCount = record.changes.count { it.included }
     val hasImage = record.imagePath.isNotBlank() && File(record.imagePath).exists()
+    val isFailed = record.status == ScanStatus.FAILED
+    val appliedCount = record.changes.count { it.included }
     val locationIcon = when {
         record.location.equals("Fridge", ignoreCase = true) -> Icons.Filled.Kitchen
         else -> Icons.Filled.ShoppingCart
@@ -203,7 +210,10 @@ private fun HistoryCard(
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            containerColor = if (isFailed)
+                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+            else
+                MaterialTheme.colorScheme.surfaceContainerLow
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -241,18 +251,37 @@ private fun HistoryCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            locationIcon,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        if (isFailed) {
+                            Icon(
+                                Icons.Filled.Error,
+                                contentDescription = "Failed",
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        } else {
+                            Icon(
+                                locationIcon,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                         Spacer(Modifier.width(4.dp))
                         Text(
                             record.location,
                             style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isFailed) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (isFailed) {
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                "Failed",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                     Spacer(Modifier.height(2.dp))
                     Text(
@@ -262,7 +291,10 @@ private fun HistoryCard(
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        "$appliedCount item${if (appliedCount != 1) "s" else ""} synced",
+                        when {
+                            isFailed -> "Tap to view details or retry"
+                            else -> "$appliedCount item${if (appliedCount != 1) "s" else ""} synced"
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -286,13 +318,27 @@ private fun HistoryCard(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
 
-                    record.changes.forEachIndexed { idx, change ->
-                        ChangeDetailRow(change = change)
-                        if (idx < record.changes.lastIndex) {
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
+                    if (isFailed) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                        ) {
+                            record.errorMessage?.let { msg ->
+                                Text(
+                                    msg,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                    } else {
+                        record.changes.forEachIndexed { idx, change ->
+                            ChangeDetailRow(change = change)
+                            if (idx < record.changes.lastIndex) {
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+                            }
                         }
                     }
 
@@ -302,6 +348,21 @@ private fun HistoryCard(
                             .padding(horizontal = 16.dp, vertical = 12.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
+                        if (isFailed) {
+                            OutlinedButton(
+                                onClick = { onRetry(record) },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Filled.Refresh,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text("Retry")
+                            }
+                        }
                         IconButton(
                             onClick = { onDelete(record) },
                             modifier = Modifier.size(36.dp)

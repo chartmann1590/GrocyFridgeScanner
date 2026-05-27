@@ -2,6 +2,7 @@ package com.charleshartmann.grocyfridge.ui
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.charleshartmann.grocyfridge.ai.LiteRtFoodImageAnalyzer
@@ -16,6 +17,7 @@ import com.charleshartmann.grocyfridge.model.ProposedChange
 import com.charleshartmann.grocyfridge.model.ScanHistoryChange
 import com.charleshartmann.grocyfridge.model.ScanHistoryRecord
 import com.charleshartmann.grocyfridge.model.ScanState
+import com.charleshartmann.grocyfridge.model.ScanStatus
 import com.charleshartmann.grocyfridge.model.StorageLocation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -79,17 +81,24 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             try {
                 _uiState.update { it.copy(scanState = ScanState.PreparingModel, lastSyncMessage = null) }
+                Log.i(TAG, "Preparing model for image: $imagePath")
                 val modelFile = modelManager.ensureModel()
                 _uiState.update { it.copy(scanState = ScanState.Analyzing) }
+                Log.i(TAG, "Analyzing image...")
                 val analyzer = LiteRtFoodImageAnalyzer(modelFile)
                 val detectionResult = analyzer.analyze(imagePath)
+                Log.i(TAG, "Detection result: ${detectionResult.items.size} items found")
                 val repository = repository(currentSettings)
                 val changes = repository.buildProposals(detectionResult.items, uiState.value.selectedLocation)
+                Log.i(TAG, "Built ${changes.size} proposals")
                 _uiState.update { it.copy(scanState = ScanState.Review(imagePath, changes)) }
             } catch (throwable: Throwable) {
+                Log.e(TAG, "Photo analysis failed", throwable)
+                val errorMsg = throwable.message ?: "Photo analysis failed."
                 _uiState.update {
-                    it.copy(scanState = ScanState.Error(throwable.message ?: "Photo analysis failed."))
+                    it.copy(scanState = ScanState.Error(errorMsg))
                 }
+                saveFailedScan(imagePath, errorMsg)
             }
         }
     }
@@ -122,7 +131,8 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
                                 newAmount = it.count,
                                 included = it.included
                             )
-                        }
+                        },
+                        status = ScanStatus.SUCCESS
                     )
                 )
                 val appliedCount = review.changes.count { it.included }
@@ -158,6 +168,13 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun retryScan(record: ScanHistoryRecord) {
+        viewModelScope.launch {
+            historyStore.delete(record)
+        }
+        analyzePhoto(record.imagePath)
+    }
+
     fun downloadModel() {
         viewModelScope.launch {
             modelManager.downloadModel()
@@ -175,6 +192,26 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
 
     private fun repository(settings: AppSettings): GrocyRepository {
         return GrocyRepository(GrocyClientFactory.create(settings.grocyUrl, settings.grocyApiKey))
+    }
+
+    private fun saveFailedScan(imagePath: String, errorMessage: String) {
+        viewModelScope.launch {
+            historyStore.add(
+                ScanHistoryRecord(
+                    timestampMillis = System.currentTimeMillis(),
+                    location = uiState.value.selectedLocation.displayName,
+                    imagePath = imagePath,
+                    changes = emptyList(),
+                    status = ScanStatus.FAILED,
+                    errorMessage = errorMessage.take(500)
+                )
+            )
+            Log.i(TAG, "Saved failed scan to history: $imagePath")
+        }
+    }
+
+    companion object {
+        private const val TAG = "GrocyFridgeVM"
     }
 }
 

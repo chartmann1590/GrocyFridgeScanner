@@ -124,4 +124,92 @@ class FoodDetectionParserTest {
         assertEquals("cheese", result.items[0].name)
         assertEquals("ham", result.items[1].name)
     }
+
+    @Test
+    fun handlesTrailingCommaInItemsArray() {
+        val result = parser.parse(
+            """{"items":[{"name":"milk","count":1,"container":"bottle","confidence":0.9},]}"""
+        )
+
+        assertEquals(1, result.items.size)
+        assertEquals("milk", result.items.first().name)
+    }
+
+    @Test
+    fun handlesTrailingCommaInObject() {
+        val result = parser.parse(
+            """{"items":[{"name":"milk","count":1,"container":"bottle","confidence":0.9,}]}"""
+        )
+
+        assertEquals(1, result.items.size)
+        assertEquals("milk", result.items.first().name)
+    }
+
+    @Test
+    fun handlesMissingClosingBrace() {
+        val result = parser.parse(
+            """{"items":[{"name":"milk","count":1,"container":"bottle","confidence":0.9}]}"""
+        )
+
+        assertEquals(1, result.items.size)
+    }
+
+    @Test
+    fun returnsEmptyResultForGarbledText() {
+        val result = parser.parse(
+            "I can see a fridge with some items but I'm not sure what they are exactly."
+        )
+
+        assertTrue(result.items.isEmpty())
+    }
+
+    @Test
+    fun returnsEmptyResultForEmptyString() {
+        val result = parser.parse("")
+
+        assertTrue(result.items.isEmpty())
+    }
+
+    @Test
+    fun returnsEmptyResultForCompletelyInvalidJson() {
+        val result = parser.parse("{not valid json at all!!!")
+
+        assertTrue(result.items.isEmpty())
+    }
+
+    @Test
+    fun handlesJsonWithoutMarkdownFence() {
+        val result = parser.parse(
+            """
+            The analysis found:
+            {"items":[{"name":"eggs","count":12,"container":"box","confidence":0.95}]}
+            That's all.
+            """.trimIndent()
+        )
+
+        assertEquals(1, result.items.size)
+        assertEquals("eggs", result.items.first().name)
+        assertEquals(12.0, result.items.first().count, 0.0)
+    }
+
+    @Test
+    fun handlesTrailingCommasAndMissingBrace() {
+        val result = parser.parse(
+            """{"items":[{"name":"milk","count":1,"container":"bottle","confidence":0.9,},{"name":"eggs","count":6,"container":"box","confidence":0.8,},]}"""
+        )
+
+        assertEquals(2, result.items.size)
+        assertEquals("milk", result.items[0].name)
+        assertEquals("eggs", result.items[1].name)
+    }
+
+    @Test
+    fun handlesNestedJsonWithoutFence() {
+        val result = parser.parse(
+            """Here is the result: {"items":[{"name":"bread","count":2,"container":"bag","confidence":0.85}]} done"""
+        )
+
+        assertEquals(1, result.items.size)
+        assertEquals("bread", result.items.first().name)
+    }
 }

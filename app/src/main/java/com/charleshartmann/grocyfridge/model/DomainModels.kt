@@ -99,11 +99,19 @@ data class AppSettings(
 }
 
 @Serializable
+enum class ScanStatus {
+    SUCCESS, FAILED
+}
+
+@Serializable
 data class ScanHistoryRecord(
     val timestampMillis: Long,
     val location: String,
     val imagePath: String,
-    val changes: List<ScanHistoryChange>
+    val changes: List<ScanHistoryChange>,
+    val status: ScanStatus = ScanStatus.SUCCESS,
+    val rawLlmResponse: String? = null,
+    val errorMessage: String? = null
 )
 
 @Serializable
