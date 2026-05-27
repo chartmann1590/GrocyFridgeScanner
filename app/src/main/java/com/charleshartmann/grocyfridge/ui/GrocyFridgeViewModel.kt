@@ -133,11 +133,11 @@ class GrocyFridgeViewModel(application: Application) : AndroidViewModel(applicat
                 _uiState.update { it.copy(scanState = ScanState.Review(imagePath, changes)) }
             } catch (throwable: Throwable) {
                 Log.e(TAG, "Photo analysis failed", throwable)
-                val errorMsg = throwable.message ?: "Photo analysis failed."
+                val rawMsg = throwable.message ?: "Photo analysis failed."
                 _uiState.update {
-                    it.copy(scanState = ScanState.Error(errorMsg))
+                    it.copy(scanState = ScanState.Error(rawMsg))
                 }
-                saveFailedScan(imagePath, errorMsg)
+                saveFailedScan(imagePath, rawMsg)
             }
         }
     }

@@ -1,9 +1,11 @@
 package com.charleshartmann.grocyfridge.data
 
+import android.util.Log
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
@@ -17,6 +19,10 @@ object GrocyClientFactory {
 
     fun create(baseUrl: String, apiKey: String): GrocyApi {
         val normalizedUrl = baseUrl.trim().trimEnd('/') + "/"
+        val logger = HttpLoggingInterceptor { message ->
+            Log.d("GrocyHttp", message)
+        }.apply { level = HttpLoggingInterceptor.Level.HEADERS }
+
         val client = OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(45, TimeUnit.SECONDS)
@@ -24,9 +30,11 @@ object GrocyClientFactory {
                 chain.proceed(
                     chain.request().newBuilder()
                         .header("GROCY-API-KEY", apiKey)
+                        .header("Content-Type", "application/json")
                         .build()
                 )
             }
+            .addInterceptor(logger)
             .build()
 
         return Retrofit.Builder()
