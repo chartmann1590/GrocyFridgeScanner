@@ -44,8 +44,8 @@ android {
             val ksPwd = System.getenv("KEYSTORE_PASSWORD")
             val ksAlias = System.getenv("KEY_ALIAS")
             val ksAliasPwd = System.getenv("KEY_ALIAS_PASSWORD")
-            if (ksFile != null && File(ksFile).exists()) {
-                storeFile = File(ksFile)
+            if (ksFile != null && rootProject.file(ksFile).exists()) {
+                storeFile = rootProject.file(ksFile)
                 storePassword = ksPwd
                 keyAlias = ksAlias
                 keyPassword = ksAliasPwd
