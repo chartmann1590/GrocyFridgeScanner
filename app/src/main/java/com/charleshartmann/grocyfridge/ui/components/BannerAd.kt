@@ -25,6 +25,7 @@ fun BannerAd(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    if (areAdsHidden()) return
     val adView = remember { AdView(context) }
 
     Box(
@@ -67,4 +68,13 @@ private fun getMaxAdWidth(context: android.content.Context): Int {
     val displayMetrics = context.resources.displayMetrics
     val screenWidthDp = displayMetrics.widthPixels / displayMetrics.density
     return (screenWidthDp - 32).toInt().coerceAtMost(728)
+}
+
+private fun areAdsHidden(): Boolean = try {
+    val cls = Class.forName("android.os.SystemProperties")
+    val get = cls.getMethod("get", String::class.java, String::class.java)
+    val value = get.invoke(null, "debug.grocy.ads.disabled", "0") as? String
+    value == "1"
+} catch (_: Throwable) {
+    false
 }

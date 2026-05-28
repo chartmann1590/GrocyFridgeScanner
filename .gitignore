@@ -8,3 +8,19 @@ captures/
 *.jks
 *.keystore
 keystore.properties
+
+# Play Store build artifacts (raw captures and intermediates that may contain
+# the user's real Grocy URL or are too large to be useful in version control).
+play-store/source/video_build/
+play-store/source/inspect/
+play-store/source/preview/
+play-store/source/*_raw.png
+play-store/source/scan_*.png
+play-store/source/screen_test*.png
+play-store/source/scanner_check.png
+play-store/source/after_scan.png
+play-store/source/now.png
+play-store/source/launcher.png
+play-store/source/fridge_interior.png
+play-store/source/ui.xml
+play-store/source/created_ids.json

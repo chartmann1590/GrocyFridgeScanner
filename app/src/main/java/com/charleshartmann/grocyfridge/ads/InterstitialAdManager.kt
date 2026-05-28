@@ -18,7 +18,7 @@ object InterstitialAdManager {
     private var isLoading = false
 
     fun load(activity: Activity) {
-        if (interstitialAd != null || isLoading) return
+        if (areAdsHidden() || interstitialAd != null || isLoading) return
         isLoading = true
         InterstitialAd.load(
             activity,
@@ -41,6 +41,10 @@ object InterstitialAdManager {
     }
 
     fun show(activity: Activity, onDismissed: () -> Unit) {
+        if (areAdsHidden()) {
+            onDismissed()
+            return
+        }
         val ad = interstitialAd
         if (ad == null) {
             Log.d(TAG, "No interstitial ad ready, proceeding")
@@ -70,5 +74,14 @@ object InterstitialAdManager {
         }
 
         ad.show(activity)
+    }
+
+    private fun areAdsHidden(): Boolean = try {
+        val cls = Class.forName("android.os.SystemProperties")
+        val get = cls.getMethod("get", String::class.java, String::class.java)
+        val value = get.invoke(null, "debug.grocy.ads.disabled", "0") as? String
+        value == "1"
+    } catch (_: Throwable) {
+        false
     }
 }

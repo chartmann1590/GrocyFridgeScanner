@@ -1,0 +1,31 @@
+Grocy Fridge Scanner — Play Store promo video script
+============================================================
+
+[Scene 1 — 6.73s, 00:00:00,000]
+Narration: Meet Grocy Fridge Scanner. Your kitchen's new AI inventory clerk.
+Caption:   Meet Grocy Fridge Scanner.
+Your kitchen's new AI inventory clerk.
+
+[Scene 2 — 5.23s, 00:00:06,733]
+Narration: Just point your phone at any fridge or cupboard, and snap.
+Caption:   Point. Snap. Done.
+
+[Scene 3 — 8.24s, 00:00:11,962]
+Narration: On-device AI detects every item. No cloud. No data ever leaves your phone.
+Caption:   On-device AI.
+Nothing leaves your phone.
+
+[Scene 4 — 5.86s, 00:00:20,206]
+Narration: Review every change, then sync straight to your self-hosted Grocy.
+Caption:   Review and sync to your Grocy.
+
+[Scene 5 — 5.47s, 00:00:26,064]
+Narration: Track every shelf at a glance, with one-tap quick actions.
+Caption:   Quick actions. Real-time stock.
+
+[Scene 6 — 6.50s, 00:00:31,533]
+Narration: Grocy Fridge Scanner. Open source. Available now.
+Caption:   Grocy Fridge Scanner.
+Open source. Available now.
+
+Total runtime: 38.04s
