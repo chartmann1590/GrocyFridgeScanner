@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grocy Fridge Scanner — AI-Powered Inventory for Your Kitchen</title>
+    <meta name="description" content="Point your phone at a fridge or cupboard, take a photo, and let AI detect and sync every food item directly to your Grocy inventory. 100% on-device, privacy-first.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -35,7 +36,6 @@
 
         .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 
-        /* Nav */
         nav {
             position: sticky; top: 0; z-index: 50;
             background: rgba(248, 250, 246, 0.85);
@@ -45,7 +45,7 @@
         }
         nav .container { display: flex; align-items: center; justify-content: space-between; }
         .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
-        .nav-brand svg { width: 28px; height: 28px; }
+        .nav-brand img { width: 32px; height: 32px; border-radius: 8px; }
         .nav-links { display: flex; gap: 24px; align-items: center; }
         .nav-links a {
             color: var(--on-surface-variant); text-decoration: none; font-size: 14px; font-weight: 500;
@@ -62,9 +62,15 @@
         .btn-primary:hover { background: var(--teal-50); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,107,99,0.3); }
         .btn-outline { background: transparent; color: var(--teal-40); border: 1.5px solid var(--teal-40); }
         .btn-outline:hover { background: rgba(0,107,99,0.06); }
+        .btn-play-store { background: #000; color: white; }
+        .btn-play-store:hover { background: #222; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
-        /* Hero */
-        .hero { padding: 100px 0 80px; text-align: center; }
+        .hero { padding: 80px 0 60px; text-align: center; }
+        .hero-icon {
+            width: 96px; height: 96px; border-radius: 22px;
+            margin: 0 auto 24px;
+            box-shadow: 0 8px 32px rgba(0,107,99,0.15);
+        }
         .hero-badge {
             display: inline-flex; align-items: center; gap: 6px;
             background: rgba(0,107,99,0.08); color: var(--teal-40);
@@ -76,37 +82,15 @@
         .hero h1 span { background: linear-gradient(135deg, var(--teal-40), var(--green-40)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .hero p { font-size: 18px; color: var(--on-surface-variant); max-width: 600px; margin: 0 auto 36px; }
         .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-        .hero-visual {
-            margin-top: 64px; position: relative;
-            background: linear-gradient(135deg, rgba(0,107,99,0.05), rgba(45,104,53,0.05));
-            border-radius: 24px; padding: 32px; border: 1px solid var(--outline);
+        .hero-feature-graphic {
+            margin-top: 48px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+            border: 1px solid var(--outline);
         }
-        .hero-visual-inner {
-            background: var(--surface-card); border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.08); overflow: hidden;
-        }
-        .mock-bar { background: var(--surface); padding: 12px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--outline); }
-        .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .mock-dot:nth-child(1) { background: #FF5F57; }
-        .mock-dot:nth-child(2) { background: #FEBC2E; }
-        .mock-dot:nth-child(3) { background: #28C840; }
-        .mock-title { font-size: 13px; font-weight: 600; margin-left: 8px; color: var(--on-surface-variant); }
-        .mock-content { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .mock-card { background: var(--surface); border-radius: 12px; padding: 16px; border: 1px solid var(--outline); }
-        .mock-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--teal-40); }
-        .mock-card p { font-size: 12px; color: var(--on-surface-variant); line-height: 1.5; }
-        .mock-chip { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 500; margin: 2px; }
-        .mock-chip-active { background: rgba(0,107,99,0.12); color: var(--teal-40); }
-        .mock-chip-default { background: var(--surface); color: var(--on-surface-variant); border: 1px solid var(--outline); }
-        .mock-delta-pos { color: #16A34A; font-weight: 600; font-size: 12px; }
-        .mock-change-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(196,200,194,0.5); }
-        .mock-change-row:last-child { border-bottom: none; }
-        .mock-inventory-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
-        .mock-btn-sm { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 4px; }
-        .mock-btn-use { background: rgba(220,38,38,0.1); color: #DC2626; }
-        .mock-btn-add { background: rgba(0,107,99,0.1); color: var(--teal-40); }
+        .hero-feature-graphic img { width: 100%; display: block; }
 
-        /* How it works */
         .section { padding: 80px 0; }
         .section-label {
             font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
@@ -130,7 +114,6 @@
         .step-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
         .step-card p { font-size: 14px; color: var(--on-surface-variant); }
 
-        /* Features */
         .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
         .feature-card {
             background: var(--surface-card); border-radius: var(--radius); padding: 28px;
@@ -146,7 +129,41 @@
         .feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
         .feature-card p { font-size: 13px; color: var(--on-surface-variant); }
 
-        /* Tech */
+        .screenshots-scroll {
+            display: flex; gap: 16px; overflow-x: auto; padding: 8px 0 16px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        .screenshots-scroll::-webkit-scrollbar { height: 6px; }
+        .screenshots-scroll::-webkit-scrollbar-track { background: transparent; }
+        .screenshots-scroll::-webkit-scrollbar-thumb { background: var(--outline); border-radius: 3px; }
+        .screenshot-item {
+            flex: 0 0 220px; scroll-snap-align: start;
+            border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--outline);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .screenshot-item:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .screenshot-item img { width: 100%; display: block; }
+        .screenshot-label {
+            padding: 10px 14px; font-size: 12px; font-weight: 600;
+            background: var(--surface-card); color: var(--on-surface-variant);
+            border-top: 1px solid var(--outline);
+        }
+
+        .video-wrapper {
+            position: relative; padding-bottom: 56.25%; height: 0;
+            border-radius: 16px; overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+            border: 1px solid var(--outline);
+            max-width: 900px; margin: 0 auto;
+        }
+        .video-wrapper iframe {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border: none;
+        }
+
         .tech-grid { display: flex; gap: 16px; flex-wrap: wrap; }
         .tech-tag {
             display: flex; align-items: center; gap: 8px;
@@ -156,7 +173,6 @@
         }
         .tech-tag svg { width: 18px; height: 18px; color: var(--teal-40); }
 
-        /* CTA */
         .cta {
             text-align: center; padding: 80px 0;
             background: linear-gradient(135deg, var(--teal-40), var(--green-40));
@@ -167,32 +183,31 @@
         .btn-white { background: white; color: var(--teal-40); }
         .btn-white:hover { background: #f0f0f0; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
 
-        /* Footer */
         footer { padding: 40px 0; border-top: 1px solid var(--outline); text-align: center; }
         footer p { font-size: 13px; color: var(--on-surface-variant); }
         footer a { color: var(--teal-40); text-decoration: none; }
         footer a:hover { text-decoration: underline; }
 
         @media (max-width: 640px) {
-            .mock-content { grid-template-columns: 1fr; }
             .hero-actions { flex-direction: column; align-items: center; }
             .nav-links .btn { display: none; }
+            .screenshot-item { flex: 0 0 180px; }
         }
     </style>
 </head>
 <body>
 
-<!-- Nav -->
 <nav>
     <div class="container">
         <div class="nav-brand">
-            <svg viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#006B63"/><path d="M8 14l3-3 3 3 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="10" r="2" fill="#82DA8C"/></svg>
+            <img src="assets/icon.png" alt="Grocy Fridge Scanner">
             Grocy Fridge Scanner
         </div>
         <div class="nav-links">
             <a href="#how-it-works">How It Works</a>
             <a href="#features">Features</a>
-            <a href="#inventory">Inventory</a>
+            <a href="#screenshots">Screenshots</a>
+            <a href="#video">Video</a>
             <a href="#tech">Tech</a>
             <a href="privacy.html">Privacy</a>
             <a class="btn btn-primary" href="https://github.com/chartmann1590/GrocyFridgeScanner" target="_blank">
@@ -203,9 +218,9 @@
     </div>
 </nav>
 
-<!-- Hero -->
 <section class="hero">
     <div class="container">
+        <img class="hero-icon" src="assets/icon.png" alt="Grocy Fridge Scanner App Icon">
         <div class="hero-badge">
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.78 5.28l-4.5 5a.75.75 0 01-1.06.02l-2-1.85a.75.75 0 111.02-1.1l1.44 1.34 3.98-4.42a.75.75 0 111.12 1z"/></svg>
             100% On-Device AI &mdash; No Cloud Required
@@ -213,6 +228,10 @@
         <h1>Know what's in your<br><span>kitchen at a glance</span></h1>
         <p>Point your phone at a fridge or cupboard, take a photo, and let AI detect and sync every food item directly to your Grocy inventory.</p>
         <div class="hero-actions">
+            <a class="btn btn-play-store" href="https://play.google.com/store/apps/details?id=com.charleshartmann.grocyfridge" target="_blank">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.807 1.626a1 1 0 010 1.732l-2.807 1.626L15.206 12l2.492-2.492zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/></svg>
+                Get it on Google Play
+            </a>
             <a class="btn btn-primary" href="https://github.com/chartmann1590/GrocyFridgeScanner/releases/latest" target="_blank">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.53 7.03l-3 3a.75.75 0 01-1.06 0l-3-3a.75.75 0 011.06-1.06L7.25 8.69V4.75a.75.75 0 011.5 0v3.94l1.72-1.72a.75.75 0 011.06 1.06z"/></svg>
                 Download APK
@@ -223,47 +242,12 @@
             </a>
         </div>
 
-        <div class="hero-visual">
-            <div class="hero-visual-inner">
-                <div class="mock-bar">
-                    <div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div>
-                    <span class="mock-title">Grocy Fridge Scanner</span>
-                </div>
-                <div class="mock-content">
-                    <div class="mock-card">
-                        <h4>Camera</h4>
-                        <p>Live camera preview with one-tap capture to scan your fridge or cupboard shelves.</p>
-                        <div style="margin-top:8px">
-                            <span class="mock-chip mock-chip-active">Fridge</span>
-                            <span class="mock-chip mock-chip-default">Cupboards</span>
-                        </div>
-                    </div>
-                    <div class="mock-card">
-                        <h4>Review Changes</h4>
-                        <div class="mock-change-row"><span style="font-size:12px">Milk (1L)</span><span class="mock-delta-pos">+2</span></div>
-                        <div class="mock-change-row"><span style="font-size:12px">Chips</span><span class="mock-delta-pos">+1</span></div>
-                        <div class="mock-change-row"><span style="font-size:12px">Eggs</span><span class="mock-delta-pos">+6</span></div>
-                        <div style="margin-top:10px;text-align:center"><span class="mock-chip mock-chip-active" style="background:var(--teal-40);color:white">Sync to Grocy</span></div>
-                    </div>
-                    <div class="mock-card">
-                        <h4>Inventory</h4>
-                        <div class="mock-inventory-row"><span style="font-size:12px">Milk (1L)</span><span><span style="font-size:12px">3 pcs</span> <span class="mock-btn-sm mock-btn-use">Use 1</span> <span class="mock-btn-sm mock-btn-add">Add 1</span></span></div>
-                        <div class="mock-inventory-row"><span style="font-size:12px">Eggs</span><span><span style="font-size:12px">12 pcs</span> <span class="mock-btn-sm mock-btn-use">Use 1</span> <span class="mock-btn-sm mock-btn-add">Add 1</span></span></div>
-                        <div class="mock-inventory-row"><span style="font-size:12px">Cheddar</span><span><span style="font-size:12px">2 pcs</span> <span class="mock-btn-sm mock-btn-use">Use 1</span> <span class="mock-btn-sm mock-btn-add">Add 1</span></span></div>
-                    </div>
-                    <div class="mock-card">
-                        <h4>Scan History</h4>
-                        <div class="mock-change-row"><span style="font-size:12px">Fridge &middot; 5 min ago</span><span class="mock-delta-pos">4 items</span></div>
-                        <div class="mock-change-row"><span style="font-size:12px">Fridge &middot; 2 hrs ago</span><span class="mock-delta-pos">3 items</span></div>
-                        <div class="mock-change-row"><span style="font-size:12px">Cupboards &middot; Yesterday</span><span class="mock-delta-pos">6 items</span></div>
-                    </div>
-                </div>
-            </div>
+        <div class="hero-feature-graphic">
+            <img src="assets/feature_graphic.png" alt="Grocy Fridge Scanner — AI-powered fridge & cupboard inventory scanner for Grocy">
         </div>
     </div>
 </section>
 
-<!-- How It Works -->
 <section class="section" id="how-it-works">
     <div class="container">
         <div class="section-label">How It Works</div>
@@ -295,8 +279,54 @@
     </div>
 </section>
 
-<!-- Features -->
-<section class="section" id="features" style="background: linear-gradient(180deg, var(--surface) 0%, rgba(0,107,99,0.03) 100%);">
+<section class="section" id="screenshots" style="background: linear-gradient(180deg, var(--surface) 0%, rgba(0,107,99,0.03) 100%);">
+    <div class="container">
+        <div class="section-label">Screenshots</div>
+        <h2>See it in action</h2>
+        <p>From scanning to managing your inventory — everything happens on your phone.</p>
+
+        <div class="screenshots-scroll">
+            <div class="screenshot-item">
+                <img src="assets/screenshots/01_scanner.png" alt="Barcode Scanner">
+                <div class="screenshot-label">Scanner</div>
+            </div>
+            <div class="screenshot-item">
+                <img src="assets/screenshots/02_analyzing.png" alt="AI Analyzing">
+                <div class="screenshot-label">AI Analysis</div>
+            </div>
+            <div class="screenshot-item">
+                <img src="assets/screenshots/03_inventory.png" alt="Inventory View">
+                <div class="screenshot-label">Inventory</div>
+            </div>
+            <div class="screenshot-item">
+                <img src="assets/screenshots/04_inventory_quick_actions.png" alt="Quick Actions">
+                <div class="screenshot-label">Quick Actions</div>
+            </div>
+            <div class="screenshot-item">
+                <img src="assets/screenshots/05_history_detail.png" alt="Scan History">
+                <div class="screenshot-label">Scan History</div>
+            </div>
+            <div class="screenshot-item">
+                <img src="assets/screenshots/06_settings.png" alt="Settings">
+                <div class="screenshot-label">Settings</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="video">
+    <div class="container">
+        <div class="section-label">Feature Video</div>
+        <h2>Watch the scanner in action</h2>
+        <p>See how Grocy Fridge Scanner detects food items and syncs them to your Grocy inventory — all on-device.</p>
+
+        <div class="video-wrapper">
+            <iframe src="https://www.youtube.com/embed/WAUOUU3Bvu0" title="Grocy Fridge Scanner — Feature Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="features">
     <div class="container">
         <div class="section-label">Features</div>
         <h2>Built for self-hosters who want simplicity</h2>
@@ -379,7 +409,6 @@
     </div>
 </section>
 
-<!-- Inventory Management -->
 <section class="section" id="inventory">
     <div class="container">
         <div class="section-label">Inventory Management</div>
@@ -411,7 +440,6 @@
     </div>
 </section>
 
-<!-- Tech -->
 <section class="section" id="tech">
     <div class="container">
         <div class="section-label">Under the Hood</div>
@@ -433,25 +461,35 @@
     </div>
 </section>
 
-<!-- CTA -->
 <div class="container">
     <section class="cta">
         <h2>Ready to automate your kitchen inventory?</h2>
         <p>Open source, self-hosted, privacy-first. Scan, manage, and sync in seconds.</p>
-        <a class="btn btn-white" href="https://github.com/chartmann1590/GrocyFridgeScanner/releases/latest" target="_blank">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.53 7.03l-3 3a.75.75 0 01-1.06 0l-3-3a.75.75 0 011.06-1.06L7.25 8.69V4.75a.75.75 0 011.5 0v3.94l1.72-1.72a.75.75 0 011.06 1.06z"/></svg>
-            Download Latest APK
-        </a>
-        <a class="btn btn-white" href="https://github.com/chartmann1590/GrocyFridgeScanner/releases" target="_blank" style="margin-left:12px; background:transparent; color:white; border:1.5px solid rgba(255,255,255,0.5);">
-            View All Releases
-        </a>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <a class="btn btn-white" href="https://play.google.com/store/apps/details?id=com.charleshartmann.grocyfridge" target="_blank">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.807 1.626a1 1 0 010 1.732l-2.807 1.626L15.206 12l2.492-2.492zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/></svg>
+                Get it on Google Play
+            </a>
+            <a class="btn btn-white" href="https://github.com/chartmann1590/GrocyFridgeScanner/releases/latest" target="_blank">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.53 7.03l-3 3a.75.75 0 01-1.06 0l-3-3a.75.75 0 011.06-1.06L7.25 8.69V4.75a.75.75 0 011.5 0v3.94l1.72-1.72a.75.75 0 011.06 1.06z"/></svg>
+                Download Latest APK
+            </a>
+            <a class="btn btn-white" href="https://github.com/chartmann1590/GrocyFridgeScanner/releases" target="_blank" style="background:transparent; color:white; border:1.5px solid rgba(255,255,255,0.5);">
+                View All Releases
+            </a>
+        </div>
     </section>
 </div>
 
-<!-- Footer -->
 <footer>
     <div class="container">
-        <p>Grocy Fridge Scanner is open source under the MIT License. <a href="https://github.com/chartmann1590/GrocyFridgeScanner">View on GitHub</a> &middot; <a href="privacy.html">Privacy Policy</a></p>
+        <p>
+            Grocy Fridge Scanner is open source under the MIT License.
+            <a href="https://github.com/chartmann1590/GrocyFridgeScanner">GitHub</a> &middot;
+            <a href="https://play.google.com/store/apps/details?id=com.charleshartmann.grocyfridge" target="_blank">Google Play</a> &middot;
+            <a href="https://youtu.be/WAUOUU3Bvu0" target="_blank">Feature Video</a> &middot;
+            <a href="privacy.html">Privacy Policy</a>
+        </p>
     </div>
 </footer>
 

@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="play-store/icon/play_store_icon_512.png" width="96" height="96" alt="Grocy Fridge Scanner">
+
 # Grocy Fridge Scanner
 
 **AI-powered fridge & cupboard inventory scanner for Grocy**
@@ -11,8 +13,41 @@ Scan your fridge or cupboard with your phone camera. On-device AI detects food i
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-ff6f00?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 [![Gemma 4 E2B](https://img.shields.io/badge/AI-Gemma%204%20E2B-4285f4?logo=google)](https://ai.google.dev/gemma)
 [![Latest Release](https://img.shields.io/github/v/release/chartmann1590/GrocyFridgeScanner?label=Latest%20Release&color=brightgreen)](https://github.com/chartmann1590/GrocyFridgeScanner/releases/latest)
+[![Google Play](https://img.shields.io/badge/Google_Play-Available-34A853?logo=googleplay)](https://play.google.com/store/apps/details?id=com.charleshartmann.grocyfridge)
 
-**[Download the latest APK](https://github.com/chartmann1590/GrocyFridgeScanner/releases/latest)** · [View all releases](https://github.com/chartmann1590/GrocyFridgeScanner/releases)
+[![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=com.charleshartmann.grocyfridge)
+
+**[Get it on Google Play](https://play.google.com/store/apps/details?id=com.charleshartmann.grocyfridge)** · **[Download APK](https://github.com/chartmann1590/GrocyFridgeScanner/releases/latest)** · [View all releases](https://github.com/chartmann1590/GrocyFridgeScanner/releases)
+
+<img src="play-store/feature-graphic/feature_graphic_1024x500.png" width="100%" alt="Grocy Fridge Scanner Feature Graphic">
+
+</div>
+
+---
+
+## Feature Video
+
+<div align="center">
+
+[![Grocy Fridge Scanner — Feature Demo](https://img.youtube.com/vi/WAUOUU3Bvu0/maxresdefault.jpg)](https://youtu.be/WAUOUU3Bvu0)
+
+**[Watch on YouTube](https://youtu.be/WAUOUU3Bvu0)**
+
+</div>
+
+---
+
+## Screenshots
+
+<div align="center">
+
+| Scanner | Analyzing | Inventory |
+|:---:|:---:|:---:|
+| <img src="play-store/screenshots/phone/01_scanner.png" width="200" alt="Scanner"> | <img src="play-store/screenshots/phone/02_analyzing.png" width="200" alt="AI Analyzing"> | <img src="play-store/screenshots/phone/03_inventory.png" width="200" alt="Inventory"> |
+
+| Quick Actions | History | Settings |
+|:---:|:---:|:---:|
+| <img src="play-store/screenshots/phone/04_inventory_quick_actions.png" width="200" alt="Quick Actions"> | <img src="play-store/screenshots/phone/05_history_detail.png" width="200" alt="Scan History"> | <img src="play-store/screenshots/phone/06_settings.png" width="200" alt="Settings"> |
 
 </div>
 
@@ -69,12 +104,6 @@ Scan your fridge or cupboard with your phone camera. On-device AI detects food i
 - **Test During Setup** — Test your connection directly from the onboarding screen
 - **Auto-Advance** — Skips to model download if Grocy is already configured via `local.properties`
 - **Skip Option** — "Skip for now" to start using the app immediately
-
-## Screenshots
-
-| Scanner | Review | Inventory | History | Settings |
-|---------|--------|-----------|---------|----------|
-| Camera preview with location selector | Detected items with delta indicators | Full stock list with quick actions | Expandable cards with thumbnails | Connection status & AI model management |
 
 ## Requirements
 
@@ -163,5 +192,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 <div align="center">
 
 Built with Kotlin, Jetpack Compose, and Gemma AI
+
+**[Download on Google Play](https://play.google.com/store/apps/details?id=com.charleshartmann.grocyfridge)** · [GitHub](https://github.com/chartmann1590/GrocyFridgeScanner) · [Feature Video](https://youtu.be/WAUOUU3Bvu0)
 
 </div>
