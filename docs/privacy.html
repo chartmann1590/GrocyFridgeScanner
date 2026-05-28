@@ -108,7 +108,7 @@
 <div class="page-header">
     <div class="container">
         <h1>Privacy Policy</h1>
-        <p>Last updated: May 27, 2026</p>
+        <p>Last updated: May 28, 2026</p>
     </div>
 </div>
 
@@ -116,7 +116,7 @@
 <div class="policy">
 
 <div class="highlight-box">
-    <p>Grocy Fridge Scanner does not collect, transmit, or share any personal data. All processing happens on your device. The only data sent externally goes to the Grocy server you configure yourself.</p>
+    <p>Grocy Fridge Scanner does not collect, transmit, or share your personal data. All AI processing happens on your device. The only data sent externally goes to the Grocy server you configure yourself. The app uses Google AdMob to display ads; AdMob may collect device and ad interaction data as described in <a href="https://policies.google.com/technologies/ads" style="color: var(--teal-40);">Google's Ads policy</a>.</p>
 </div>
 
 <h2>1. Overview</h2>
@@ -125,7 +125,7 @@
 
 <h2>2. Data We Collect</h2>
 <p><strong>We do not collect any data.</strong> The developers of Grocy Fridge Scanner have no access to your photos, your inventory data, your Grocy server credentials, or any other information processed by this app.</p>
-<p>There are no analytics, no crash reporting, no advertising SDKs, and no third-party tracking of any kind built into this application.</p>
+<p>There are no analytics, no crash reporting, and no third-party tracking of any kind built into this application by the developers. Note that Google AdMob, which is used to display ads in the app, may collect certain device and ad interaction data as described in Section 8 below.</p>
 
 <h2>3. Data Stored on Your Device</h2>
 <p>The following data is stored locally on your Android device and never leaves it unless you explicitly configure a Grocy server:</p>
@@ -205,18 +205,28 @@
 </ul>
 
 <h2>7. Network Access</h2>
-<p>The app uses network access for exactly two purposes:</p>
+<p>The app uses network access for the following purposes:</p>
 <ul>
     <li><strong>Downloading the AI model</strong> — A single connection to HuggingFace (huggingface.co) to download the Gemma 4 E2B model file during onboarding.</li>
     <li><strong>Communicating with your Grocy server</strong> — When you sync inventory changes, the app connects to the Grocy server URL you provided.</li>
+    <li><strong>Google AdMob</strong> — The app connects to Google's ad servers to load and display banner and interstitial advertisements. These connections are handled by the Google Mobile Ads SDK.</li>
 </ul>
-<p>No other network connections are made by the app.</p>
 
 <h2>8. Third-Party Services</h2>
-<p>This application does not integrate with any third-party analytics, advertising, or data collection services. Specifically, the app does <strong>not</strong> use:</p>
+<p>This application integrates the following third-party service:</p>
+
+<h3>Google AdMob</h3>
+<p>The app uses Google AdMob to display advertisements, including banner ads at the bottom of each screen and interstitial ads that appear after taking a photo with the camera.</p>
 <ul>
-    <li>Google Analytics, Firebase, or any usage tracking</li>
-    <li>Facebook SDK, AdMob, or any advertising frameworks</li>
+    <li><strong>What AdMob may collect:</strong> Device identifiers (such as Android Advertising ID), IP address, user agent, ad interaction data (impressions, clicks), and general device information (screen size, OS version).</li>
+    <li><strong>Purpose:</strong> To serve relevant advertisements and measure ad effectiveness.</li>
+    <li><strong>Google's privacy policy:</strong> <a href="https://policies.google.com/privacy" style="color: var(--teal-40);">policies.google.com/privacy</a></li>
+    <li><strong>Opting out:</strong> You can opt out of personalized advertising by resetting your Android Advertising ID in your device Settings under Google > Ads, or by disabling ad personalization on your Google account.</li>
+</ul>
+
+<p>The app does <strong>not</strong> use:</p>
+<ul>
+    <li>Google Analytics or Firebase for usage tracking</li>
     <li>Any crash reporting services (e.g., Crashlytics, Sentry)</li>
     <li>Any social media SDKs</li>
 </ul>

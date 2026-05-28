@@ -35,9 +35,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.charleshartmann.grocyfridge.ads.InterstitialAdManager
 import com.charleshartmann.grocyfridge.model.ScanState
 import com.charleshartmann.grocyfridge.model.StorageLocation
 import com.charleshartmann.grocyfridge.ui.GrocyFridgeViewModel
@@ -50,6 +52,8 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val settings by viewModel.settings.collectAsState()
+    val context = LocalContext.current
+    val activity = context as? android.app.Activity
 
     Column(
         modifier = Modifier
@@ -136,7 +140,15 @@ fun HomeScreen(
         when (val scanState = uiState.scanState) {
             ScanState.Idle -> {
                 CameraCapturePanel(
-                    onPhoto = viewModel::analyzePhoto,
+                    onPhoto = { imagePath ->
+                        if (activity != null) {
+                            InterstitialAdManager.show(activity) {
+                                viewModel.analyzePhoto(imagePath)
+                            }
+                        } else {
+                            viewModel.analyzePhoto(imagePath)
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
             }

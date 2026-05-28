@@ -31,6 +31,16 @@ android {
         buildConfigField("String", "DEFAULT_GROCY_API_KEY", "\"${localProps.getProperty("grocy.apiKey", "")}\"")
         buildConfigField("String", "MODEL_REPO", "\"litert-community/gemma-4-E2B-it-litert-lm\"")
         buildConfigField("String", "MODEL_FILE", "\"gemma-4-E2B-it.litertlm\"")
+
+        val adMobAppId = System.getenv("AD_MOB_APP_ID") ?: "ca-app-pub-3940256099942544~3347511713"
+        val adMobBannerId = System.getenv("AD_MOB_BANNER_ID") ?: "ca-app-pub-3940256099942544/6300978111"
+        val adMobInterstitialId = System.getenv("AD_MOB_INTERSTITIAL_ID") ?: "ca-app-pub-3940256099942544/1033173712"
+
+        buildConfigField("String", "AD_MOB_APP_ID", "\"$adMobAppId\"")
+        buildConfigField("String", "AD_MOB_BANNER_ID", "\"$adMobBannerId\"")
+        buildConfigField("String", "AD_MOB_INTERSTITIAL_ID", "\"$adMobInterstitialId\"")
+
+        manifestPlaceholders["adMobAppId"] = adMobAppId
     }
 
     buildFeatures {
@@ -104,6 +114,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     implementation("com.google.ai.edge.litertlm:litertlm-android:latest.release")
+    implementation("com.google.android.gms:play-services-ads:24.1.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
