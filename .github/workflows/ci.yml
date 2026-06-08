@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      GH_API_TOKEN: "stub_token"
+      GH_REPO_OWNER: "stub_owner"
+      GH_REPO_NAME: "stub_repo"
 
     steps:
       - uses: actions/checkout@v4

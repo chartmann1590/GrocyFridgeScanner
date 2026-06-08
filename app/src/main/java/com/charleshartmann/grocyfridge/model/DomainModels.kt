@@ -150,3 +150,12 @@ sealed interface ScanState {
     data class Review(val imagePath: String, val changes: List<ProposedChange>) : ScanState
     data class Error(val message: String) : ScanState
 }
+
+@Serializable
+data class SubmittedBugReport(
+    val issueNumber: Int,
+    val title: String,
+    val status: String, // "open" or "closed"
+    val creationDate: String,
+    val htmlUrl: String
+)

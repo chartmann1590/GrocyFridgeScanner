@@ -2,6 +2,7 @@ package com.charleshartmann.grocyfridge.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -54,6 +55,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.charleshartmann.grocyfridge.ui.GitHubFeedbackViewModel
+import com.charleshartmann.grocyfridge.ui.components.ReportFormDialog
+import com.charleshartmann.grocyfridge.ui.components.IssueDetailDialog
 import com.charleshartmann.grocyfridge.BuildConfig
 import com.charleshartmann.grocyfridge.ai.ModelState
 import com.charleshartmann.grocyfridge.model.AppSettings
@@ -62,11 +72,17 @@ import com.charleshartmann.grocyfridge.ui.GrocyFridgeViewModel
 
 @Composable
 fun SettingsScreen(
-    viewModel: GrocyFridgeViewModel
+    viewModel: GrocyFridgeViewModel,
+    feedbackViewModel: GitHubFeedbackViewModel = viewModel()
 ) {
     val settings by viewModel.settings.collectAsState()
     val modelState by viewModel.modelState.collectAsState()
     val connectionTest by viewModel.connectionTest.collectAsState()
+
+    val reports by feedbackViewModel.reports.collectAsState()
+
+    var showReportForm by remember { mutableStateOf(false) }
+    var selectedIssueNumber by remember { mutableStateOf<Int?>(null) }
 
     Column(
         modifier = Modifier
@@ -174,7 +190,140 @@ fun SettingsScreen(
             }
         }
 
+        Spacer(Modifier.height(24.dp))
+
+        Text(
+            "Support & Feedback",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
+        Spacer(Modifier.height(8.dp))
+
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Filled.BugReport,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Report a Problem",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Text(
+                    "Encountered a bug or have feedback? Submit a detailed report directly to our repository, upload screenshots, and chat in the comments.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Button(
+                    onClick = { showReportForm = true },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Filled.BugReport,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text("Report a Problem")
+                }
+
+                if (reports.isNotEmpty()) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    Text(
+                        "Your Submitted Reports",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        reports.forEach { report ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                    .clickable { selectedIssueNumber = report.number }
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        report.title,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Spacer(Modifier.height(2.dp))
+                                    Text(
+                                        "Opened: ${report.createdAt} • #${report.number}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                    )
+                                }
+                                Spacer(Modifier.width(8.dp))
+                                val isClosed = report.status.lowercase() == "closed"
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(
+                                            if (isClosed) MaterialTheme.colorScheme.errorContainer
+                                            else Color(0xFFE2F3E8)
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        report.status.replaceFirstChar { it.uppercase() },
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isClosed) MaterialTheme.colorScheme.onErrorContainer
+                                        else Color(0xFF1B5E20)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Spacer(Modifier.height(16.dp))
+    }
+
+    if (showReportForm) {
+        ReportFormDialog(
+            viewModel = feedbackViewModel,
+            onDismiss = { showReportForm = false }
+        )
+    }
+
+    selectedIssueNumber?.let { issueNumber ->
+        IssueDetailDialog(
+            viewModel = feedbackViewModel,
+            issueNumber = issueNumber,
+            onDismiss = { selectedIssueNumber = null }
+        )
     }
 }
 
