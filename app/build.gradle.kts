@@ -22,8 +22,8 @@ android {
         applicationId = "com.charleshartmann.grocyfridge"
         minSdk = 31
         targetSdk = 36
-        versionCode = 16
-        versionName = "1.16"
+        versionCode = 17
+        versionName = "1.17"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
