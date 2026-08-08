@@ -123,6 +123,8 @@ dependencies {
 
     implementation("com.google.ai.edge.litertlm:litertlm-android:latest.release")
     implementation("com.google.android.gms:play-services-ads:24.1.0")
+    implementation("com.google.android.play:review-ktx:2.0.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")

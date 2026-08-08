@@ -30,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -42,6 +43,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.charleshartmann.grocyfridge.ads.InterstitialAdManager
 import com.charleshartmann.grocyfridge.model.ScanState
 import com.charleshartmann.grocyfridge.model.StorageLocation
+import com.charleshartmann.grocyfridge.review.ReviewPrompter
 import com.charleshartmann.grocyfridge.ui.GrocyFridgeViewModel
 import com.charleshartmann.grocyfridge.ui.components.CameraCapturePanel
 import com.charleshartmann.grocyfridge.ui.components.ReviewPanel
@@ -54,6 +56,12 @@ fun HomeScreen(
     val settings by viewModel.settings.collectAsState()
     val context = LocalContext.current
     val activity = context as? android.app.Activity
+
+    LaunchedEffect(uiState.lastSyncMessage) {
+        if (uiState.lastSyncMessage != null && activity != null) {
+            ReviewPrompter.maybeRequestReview(activity)
+        }
+    }
 
     Column(
         modifier = Modifier
