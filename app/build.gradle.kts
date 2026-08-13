@@ -32,14 +32,6 @@ android {
         buildConfigField("String", "MODEL_REPO", "\"litert-community/gemma-4-E2B-it-litert-lm\"")
         buildConfigField("String", "MODEL_FILE", "\"gemma-4-E2B-it.litertlm\"")
 
-        val githubToken = (System.getenv("GH_API_TOKEN") ?: localProps.getProperty("github.api.token", "")).ifBlank { "stub_token" }
-        val githubOwner = (System.getenv("GH_REPO_OWNER") ?: localProps.getProperty("github.repo.owner", "")).ifBlank { "stub_owner" }
-        val githubRepo = (System.getenv("GH_REPO_NAME") ?: localProps.getProperty("github.repo.name", "")).ifBlank { "stub_repo" }
-
-        buildConfigField("String", "GITHUB_API_TOKEN", "\"$githubToken\"")
-        buildConfigField("String", "GITHUB_REPO_OWNER", "\"$githubOwner\"")
-        buildConfigField("String", "GITHUB_REPO_NAME", "\"$githubRepo\"")
-
         val adMobAppId = System.getenv("AD_MOB_APP_ID") ?: "ca-app-pub-3940256099942544~3347511713"
         val adMobBannerId = System.getenv("AD_MOB_BANNER_ID") ?: "ca-app-pub-3940256099942544/6300978111"
         val adMobInterstitialId = System.getenv("AD_MOB_INTERSTITIAL_ID") ?: "ca-app-pub-3940256099942544/1033173712"

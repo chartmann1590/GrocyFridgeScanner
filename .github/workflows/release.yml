@@ -10,10 +10,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    env:
-      GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
-      GH_REPO_OWNER: ${{ secrets.GH_REPO_OWNER }}
-      GH_REPO_NAME: ${{ secrets.GH_REPO_NAME }}
 
     steps:
       - uses: actions/checkout@v4

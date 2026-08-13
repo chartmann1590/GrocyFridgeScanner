@@ -19,15 +19,8 @@ class GitHubFeedbackViewModel(application: Application) : AndroidViewModel(appli
     private val modelManager = ModelManager(application)
     private val settingsStore = SettingsStore(application)
     
-    private val owner = BuildConfig.GITHUB_REPO_OWNER
-    private val repo = BuildConfig.GITHUB_REPO_NAME
-    private val token = BuildConfig.GITHUB_API_TOKEN
-    
-    private val githubApi: GithubApi? = if (token.isNotBlank() && token != "stub_token") {
-        GithubClient.create(token)
-    } else {
-        null
-    }
+    // Talks to the cloudflare-worker/ feedback relay — see GithubClient.create.
+    private val githubApi: GithubApi = GithubClient.create()
 
     private var customServerUrl: String? = null
 
@@ -92,13 +85,12 @@ class GitHubFeedbackViewModel(application: Application) : AndroidViewModel(appli
     }
 
     fun syncIssueStatuses() {
-        if (githubApi == null) return
         viewModelScope.launch {
             try {
                 val currentList = reports.value
                 val updatedList = currentList.map { report ->
                     try {
-                        val remote = githubApi.getIssue(owner, repo, report.number)
+                        val remote = githubApi.getIssue(report.number)
                         report.copy(status = remote.state)
                     } catch (e: Exception) {
                         report
@@ -118,10 +110,6 @@ class GitHubFeedbackViewModel(application: Application) : AndroidViewModel(appli
         email: String,
         includeDiagnostics: Boolean
     ) {
-        if (githubApi == null) {
-            _submissionError.value = "GitHub API Client not configured. Check token."
-            return
-        }
         viewModelScope.launch {
             _isSubmitting.value = true
             _submissionError.value = null
@@ -151,10 +139,7 @@ class GitHubFeedbackViewModel(application: Application) : AndroidViewModel(appli
                     if (base64 != null) {
                         val filename = "feedback_${System.currentTimeMillis()}.jpg"
                         val uploadResponse = githubApi.uploadAsset(
-                            owner,
-                            repo,
-                            filename,
-                            UploadAssetRequest("Upload screenshot feedback-asset", base64)
+                            UploadAssetRequest(filename = filename, contentBase64 = base64)
                         )
                         val imageUrl = uploadResponse.content.downloadUrl
                         finalBody += "\n\n![Screenshot]($imageUrl)"
@@ -163,11 +148,7 @@ class GitHubFeedbackViewModel(application: Application) : AndroidViewModel(appli
                     }
                 }
 
-                val issueResponse = githubApi.createIssue(
-                    owner,
-                    repo,
-                    CreateIssueRequest(title, finalBody)
-                )
+                val issueResponse = githubApi.createIssue(CreateIssueRequest(title, finalBody))
 
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
                 val newReport = BugReport(
@@ -190,16 +171,15 @@ class GitHubFeedbackViewModel(application: Application) : AndroidViewModel(appli
     }
 
     fun openIssueThread(issueNumber: Int) {
-        if (githubApi == null) return
         viewModelScope.launch {
             _isLoadingComments.value = true
             _commentsError.value = null
             _activeIssue.value = null
             _comments.value = emptyList()
             try {
-                val issue = githubApi.getIssue(owner, repo, issueNumber)
+                val issue = githubApi.getIssue(issueNumber)
                 _activeIssue.value = issue
-                val commentsList = githubApi.getComments(owner, repo, issueNumber)
+                val commentsList = githubApi.getComments(issueNumber)
                 _comments.value = commentsList
             } catch (e: Exception) {
                 Log.e("GitHubFeedbackVM", "Failed to load comments", e)
@@ -212,7 +192,6 @@ class GitHubFeedbackViewModel(application: Application) : AndroidViewModel(appli
 
     fun postComment(body: String) {
         val active = _activeIssue.value ?: return
-        if (githubApi == null) return
         viewModelScope.launch {
             _isPostingComment.value = true
             try {
@@ -224,19 +203,16 @@ class GitHubFeedbackViewModel(application: Application) : AndroidViewModel(appli
                     if (base64 != null) {
                         val filename = "feedback_${System.currentTimeMillis()}.jpg"
                         val uploadResponse = githubApi.uploadAsset(
-                            owner,
-                            repo,
-                            filename,
-                            UploadAssetRequest("Upload comment screenshot asset", base64)
+                            UploadAssetRequest(filename = filename, contentBase64 = base64)
                         )
                         val imageUrl = uploadResponse.content.downloadUrl
                         finalBody += "\n\n![Screenshot]($imageUrl)"
                     }
                 }
 
-                githubApi.postComment(owner, repo, active.number, PostCommentRequest(finalBody))
+                githubApi.postComment(active.number, PostCommentRequest(finalBody))
                 commentScreenshotUri.value = null
-                val commentsList = githubApi.getComments(owner, repo, active.number)
+                val commentsList = githubApi.getComments(active.number)
                 _comments.value = commentsList
             } catch (e: Exception) {
                 Log.e("GitHubFeedbackVM", "Failed to post comment", e)
