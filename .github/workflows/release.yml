@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: [redacted] secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Set up JDK 17
@@ -56,9 +56,9 @@ jobs:
       - name: Build signed release APK
         env:
           KEYSTORE_FILE: app/release.keystore
-          KEYSTORE_PASSWORD: [redacted] secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_ALIAS_PASSWORD: [redacted] secrets.KEY_ALIAS_PASSWORD }}
+          KEY_ALIAS_PASSWORD: ${{ secrets.KEY_ALIAS_PASSWORD }}
           AD_MOB_APP_ID: ${{ secrets.AD_MOB_APP_ID }}
           AD_MOB_BANNER_ID: ${{ secrets.AD_MOB_BANNER_ID }}
           AD_MOB_INTERSTITIAL_ID: ${{ secrets.AD_MOB_INTERSTITIAL_ID }}
@@ -67,9 +67,9 @@ jobs:
       - name: Build signed release bundle
         env:
           KEYSTORE_FILE: app/release.keystore
-          KEYSTORE_PASSWORD: [redacted] secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_ALIAS_PASSWORD: [redacted] secrets.KEY_ALIAS_PASSWORD }}
+          KEY_ALIAS_PASSWORD: ${{ secrets.KEY_ALIAS_PASSWORD }}
           AD_MOB_APP_ID: ${{ secrets.AD_MOB_APP_ID }}
           AD_MOB_BANNER_ID: ${{ secrets.AD_MOB_BANNER_ID }}
           AD_MOB_INTERSTITIAL_ID: ${{ secrets.AD_MOB_INTERSTITIAL_ID }}
