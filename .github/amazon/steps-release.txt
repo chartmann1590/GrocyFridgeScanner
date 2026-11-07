@@ -1,6 +1,8 @@
 launch
 wait 15
 shot 01-launch
+taploop (?i)^skip for now$
+wait 3
 swipeup
 swipeup
 taploop (?i)^(next|next step|continue|get started|skip|skip for now|allow|ok|accept|agree|got it|start|i agree|not now|later|maybe later|no thanks|done|finish tutorial|english|while using the app|only this time)$
