@@ -120,17 +120,22 @@ private fun StyledCameraPreview(
                         val cameraProviderFuture = ProcessCameraProvider.getInstance(viewContext)
                         cameraProviderFuture.addListener(
                             {
-                                val provider = cameraProviderFuture.get()
-                                val preview = Preview.Builder().build().also {
-                                    it.setSurfaceProvider(previewView.surfaceProvider)
+                                // A device with no usable back camera (some Fire tablets, emulators) must not crash the app.
+                                try {
+                                    val provider = cameraProviderFuture.get()
+                                    val preview = Preview.Builder().build().also {
+                                        it.setSurfaceProvider(previewView.surfaceProvider)
+                                    }
+                                    provider.unbindAll()
+                                    provider.bindToLifecycle(
+                                        lifecycleOwner,
+                                        CameraSelector.DEFAULT_BACK_CAMERA,
+                                        preview,
+                                        imageCapture
+                                    )
+                                } catch (e: Exception) {
+                                    android.util.Log.w("CameraPreview", "Camera unavailable on this device", e)
                                 }
-                                provider.unbindAll()
-                                provider.bindToLifecycle(
-                                    lifecycleOwner,
-                                    CameraSelector.DEFAULT_BACK_CAMERA,
-                                    preview,
-                                    imageCapture
-                                )
                             },
                             ContextCompat.getMainExecutor(viewContext)
                         )
