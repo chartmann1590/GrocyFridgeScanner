@@ -1,0 +1,93 @@
+name: Amazon Appstore build + emulator test
+# Amazon Appstore (Fire) build of this app: same code, built with -Pstore=amazon (no Google Play
+# links, no Play in-app review prompt). Run on an emulator without Google Play services (like Fire).
+# Branch builds only make a DRAFT release; nothing is uploaded to any store.
+on:
+  push:
+    branches: [amazon]
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: amazon-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  amazon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: temurin
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Decode keystore
+      run: 'echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/release.keystore
+
+        '
+    - name: Build amazon APKs (store=amazon)
+      env:
+        KEYSTORE_FILE: app/release.keystore
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_ALIAS_PASSWORD: ${{ secrets.KEY_ALIAS_PASSWORD }}
+        AD_MOB_APP_ID: ${{ secrets.AD_MOB_APP_ID }}
+        AD_MOB_BANNER_ID: ${{ secrets.AD_MOB_BANNER_ID }}
+        AD_MOB_INTERSTITIAL_ID: ${{ secrets.AD_MOB_INTERSTITIAL_ID }}
+        APP_VERSION_CODE: ${{ github.run_number }}
+      run: './gradlew assembleRelease -Pstore=amazon
+
+        mkdir -p amz-apk
+
+
+        cp "$(ls app/build/outputs/apk/release/*.apk | grep -v unsigned | head -1 || ls app/build/outputs/apk/release/*.apk | head -1)" amz-apk/GrocyFridge-amazon-release.apk
+
+        ls -la amz-apk
+
+        BT=$ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools | sort -V | tail -1)
+
+        $BT/apksigner verify --print-certs amz-apk/GrocyFridge-amazon-release.apk | head -3 || true
+
+        $BT/aapt2 dump badging amz-apk/GrocyFridge-amazon-release.apk | head -3 || true
+
+        echo "--- Play Store URL strings left in the amazon release dex:"; unzip -p amz-apk/GrocyFridge-amazon-release.apk ''classes*.dex'' | strings | grep -E "play\.google\.com/store|market://" | head || true
+
+        '
+    - name: Enable KVM
+      run: 'echo ''KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"'' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+
+        sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+
+        '
+    - name: Emulator test (no Google Play services, like Fire)
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 31
+        target: default
+        arch: x86_64
+        ram-size: 3072M
+        disk-size: 4096M
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        disable-animations: true
+        script: bash .github/amazon/run-tests.sh
+    - name: Upload test results to Tab's private drop
+      if: always()
+      env:
+        DROP_KEY: ${{ secrets.DROP_KEY }}
+      run: bash .github/amazon/amazon-upload.sh /tmp/amz-out amz_GrocyFridge_r${{ github.run_number }}
+    - name: Draft release with the amazon APK (not published)
+      if: success()
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: amazon-${{ github.run_number }}
+        name: Amazon build ${{ github.run_number }} (${{ github.sha }})
+        draft: true
+        files: amz-apk/GrocyFridge-amazon-release.apk

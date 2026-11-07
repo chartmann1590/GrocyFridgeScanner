@@ -230,7 +230,7 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                            .clickable { moreAppsUriHandler.openUri("https://play.google.com/store/apps/details?id=${app.packageName}") }
+                            .clickable { moreAppsUriHandler.openUri((if (com.charleshartmann.grocyfridge.BuildConfig.STORE == "amazon") "https://www.amazon.com/gp/mas/dl/android?p=${app.packageName}" else "https://play.google.com/store/apps/details?id=${app.packageName}")) }
                             .padding(horizontal = 14.dp, vertical = 12.dp)
                     ) {
                         Column(Modifier.fillMaxWidth()) {
