@@ -22,6 +22,7 @@ private const val SYNCS_BEFORE_FIRST_ASK = 3
 
 object ReviewPrompter {
     suspend fun maybeRequestReview(activity: Activity) {
+        if (com.charleshartmann.grocyfridge.BuildConfig.STORE == "direct") return // direct (non-Play) build: no Play review prompt
         var shouldRequest = false
         activity.applicationContext.reviewPromptDataStore.edit { prefs ->
             val alreadyRequested = prefs[Keys.REQUESTED] ?: false
