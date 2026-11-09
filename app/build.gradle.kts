@@ -23,10 +23,10 @@ android {
         // Amazon builds drop Google Play links and the Play in-app review prompt.
         buildConfigField("String", "STORE", "\"${(project.findProperty("store") as String?) ?: "play"}\"")
         applicationId = "com.charleshartmann.grocyfridge"
-        minSdk = 31
+        minSdk = 30  // Fire OS 8 is Android 11 (API 30); was 31 (Tab, Nov 9 2026)
         targetSdk = 36
-        versionCode = 22
-        versionName = "1.22"
+        versionCode = 23
+        versionName = "1.23"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true

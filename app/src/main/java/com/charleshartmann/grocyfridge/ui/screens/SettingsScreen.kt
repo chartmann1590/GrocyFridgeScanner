@@ -174,8 +174,9 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
-                Spacer(Modifier.height(12.dp))
-                OutlinedButton(
+                if (BuildConfig.STORE != "amazon") Spacer(Modifier.height(12.dp))
+                // Amazon Appstore build: no outside-payment (donation) link (Amazon monetization policy)
+                if (BuildConfig.STORE != "amazon") OutlinedButton(
                     onClick = { uriHandler.openUri("https://buymeacoffee.com/charleshartmann") },
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
